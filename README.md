@@ -12,3 +12,14 @@ Note, however, that the OE Core (embedded in the Interpreter) is significantly l
 The repository contains, in the **std** sub-folder of **include** modules with the same names as those in the OE distribution, and containing parallel routine names and value names.
 
 These modules are an incomplete substitute for the OE equivalents and always, to varying extents, will this remain so. Part of the project's development, however, is to continue to close the gap as much as possible.
+
+To show the progression of ideas the repository contains not one but four folders, each showing a stage in the development process:
+
+* euphoria311
+* euphoria312
+* euphoria320
+* euphoria321
+
+The folder **euphoria311** contains the minimal RDS Euphoria.
+
+The folder **euphoria312** contains the additional functionality RDS added through its included modules, but re-cast so that each element (routine, type or value) is re-positioned in a file carrying the exact same name as is used in the OE versions. In short, each library module in **euphoria312/include/std** is a cut-down version of its OE equivalent, but using only the contents of the RDS Interpreter to define the "equivalence".

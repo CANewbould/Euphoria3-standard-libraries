@@ -32,3 +32,7 @@ The folder *euphoria321* extends the modules in *euphoria312* to add, wherever p
 Note that all versions of the RDS Interpreter, and most of the OE versions are 32-bit. No guarantees can be given if a 64-bit version of the OE Interpeter is used with these library modules!
 
 Each folder contains a small "readme" file, explaining the contents of the folder.
+
+Examples of using each version are included in a *demos* folder under each staged version. As well as including the original demo files supplied with the RDS distribution, suitably positioned between the versions, there is a set of examples where, instead of incorporating illustrative examples into the embedded documentation of each standard library module, these examples are played out in a "demo". So, for example, the file *demos/math.ex* contains within it all the illustrative examples shown in the Open Euphoria documentation for the *std/math.e* module.
+
+Additionally, to make running these examples easier, a batch file *eu3.bat* is provided in each *demos* folder to set the relevant parameters and call the appropriate interpreter. (These act a little like the Open Euphoria *eu.cfg* files.)

@@ -1,0 +1,154 @@
+--------------------------------------------------------------------------------
+--	Library: error.e
+--------------------------------------------------------------------------------
+-- Notes:
+--
+-- 
+--------------------------------------------------------------------------------
+--/*
+--= Library: (eu3.2.0)(include)(std)error.e
+-- Description: Re-allocation of existing OE4 libraries into standard libraries
+-- for use with Eu3
+------
+--[[[Version: 3.2.0.0
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2017.09.07
+--Status: created; operational; complete
+--Changes:]]]
+--* defined ##crash_file##
+--* defined ##crash_message##
+--* defined ##crash_routine##
+--
+------
+--==Euphoria Standard library: error
+--===Routines
+-- The following routines are part of the Open Euphoria's standard
+-- library and have been tested/amended to function with Eu3.1.1.
+--* ##crash_file##
+--* ##crash_message##
+--* ##crash_routine##
+--
+-- Utilise these routines by adding the following statement to your module:
+--<eucode>include std/error.e</eucode>
+--
+--*/
+--------------------------------------------------------------------------------
+-- Previous versions
+--------------------------------------------------------------------------------
+--Version:
+--Date:
+--Author:
+--Status:
+-- Changes:
+--------------------------------------------------------------------------------
+--/*
+--==Interface
+--*/
+--------------------------------------------------------------------------------
+--
+--=== Includes
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Constants
+--
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+constant M_CRASH_FILE = 57
+constant M_CRASH_MESSAGE = 37
+constant M_CRASH_ROUTINE = 66
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Euphoria types
+--
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Variables
+--
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--/*
+--=== Routines
+--*/
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+global procedure crash_file(sequence file_path)	-- specifies an alternative file path name for any diagnostic information to be written
+    machine_proc(M_CRASH_FILE, file_path)
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+-- 		# ##file_path##: the new error and traceback file path.
+--
+-- Notes:
+--
+-- 		There can be as many calls to ##crash_file## as needed. Whatever was defined last will be used
+--      in case of an error at runtime, whether it was triggered by ##crash## or not.
+--*/
+--------------------------------------------------------------------------------
+global procedure crash_message(sequence msg)	-- specifies a final message to display for your user, if Euphoria has to shut down the current program due to an error
+    machine_proc(M_CRASH_MESSAGE, msg)
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--     # ##msg##: the string to display. It must only contain printable characters.
+--
+-- Notes:
+--
+--     There can be as many calls to ##crash_message## as needed in a program. Whatever was defined
+--     last will be used in case of a runtime error.
+--*/
+--------------------------------------------------------------------------------
+global procedure crash_routine(integer proc)	-- specifies the routine id of a 1-parameter Euphoria function to call in the event that Euphoria must shut down the current program due to an error
+    machine_proc(M_CRASH_ROUTINE, proc)
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+-- 		# ##func##: the routine_id of the function to link in.
+--
+-- Notes:
+--
+--   The supplied function must have only one parameter, which should be integer or more general. 
+--   Defaulted parameters in crash routines are not supported yet.
+--
+--   Euphoria maintains a linked list of routines to execute upon a crash. ##crash_routine## adds 
+--   a new function to the list. The routines defined first are executed last. You cannot unlink
+--   a routine once it is linked, nor inspect the crash routine chain.
+--
+--   Currently, the crash routines are passed 0. Future versions may attempt to convey more
+--   information to them. If a crash routine returns anything else than 0, the remaining
+--   routines in the chain are skipped.
+--
+--   crash routines are not full fledged exception handlers, and they cannot resume execution at 
+--   current or next statement. However, they can read the generated crash file, and might 
+--   perform any action, including restarting the program.
+--*/
+--------------------------------------------------------------------------------
+--
+--==== Defined instances
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------

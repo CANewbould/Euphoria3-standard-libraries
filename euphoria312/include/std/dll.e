@@ -1,0 +1,450 @@
+--------------------------------------------------------------------------------
+--	Library: dll.e
+--------------------------------------------------------------------------------
+-- Notes:
+--
+-- 
+--------------------------------------------------------------------------------
+--/*
+--= Library: (euphoria)(include)(std)dll.e
+-- Description: Re-allocation of existing Eu3 libraries into standard libraries
+------
+--[[[Version: 3.1.2.8
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2018.01.19
+--Status: created; complete
+--Changes:]]]
+--* documented ##open_dll##
+--
+------
+--==Euphoria Standard library: dll
+--===Routines
+-- The following routines are part of the Eu3.1.1 installation and deliver
+-- exactly the same functionality as those defined in Open Euphoria's standard
+--library of the same name.
+--* ##call_back##
+--* ##define_c_func##
+--* ##define_c_proc##
+--* ##define_c_var##
+--* ##open_dll##
+--
+-- Utilise these routines by adding the following statement to your module:
+--<eucode>include std/dll.e</eucode>
+--
+--*/
+--------------------------------------------------------------------------------
+-- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.7
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2018.01.11
+--Status: created; incomplete
+--Changes:]]]
+--* documented ##define_c_var##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.6
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2018.01.10
+--Status: created; incomplete
+--Changes:]]]
+--* documented ##define_c_proc##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.5
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2018.01.08
+--Status: created; incomplete
+--Changes:]]]
+--* documented ##call_back##
+--* documented ##define_c_func##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.4
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2018.01.07
+--Status: created; incomplete
+--Changes:]]]
+--* documented ##call_back##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.3
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2017.12.30
+--Status: created; incomplete
+--Changes:]]]
+--* defined E-type constants
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.2
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2017.08.17
+--Status: created; incomplete
+--Changes:]]]
+--* defined ##open_dll##
+--* defined ##NULL##
+--* defined C-type constants
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.1
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2017.08.14
+--Status: created; incomplete
+--Changes:]]]
+--* defined ##define_c_func##
+--* defined ##define_c_proc##
+--* defined ##define_c_var##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.0
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2017.08.11
+--Status: created; incomplete
+--Changes:]]]
+--* defined ##call_back##
+--------------------------------------------------------------------------------
+--/*
+--==Interface
+--*/
+--------------------------------------------------------------------------------
+--
+--=== Includes
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--/*
+--=== Constants
+--*/
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+constant M_CALL_BACK = 52
+constant M_DEFINE_C = 51
+constant M_DEFINE_VAR = 56
+constant M_OPEN_DLL = 50
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+global constant C_CHAR    = #01000001
+global constant C_DOUBLE  = #03000008
+global constant C_FLOAT   = #03000004
+global constant C_INT     = #01000004
+global constant C_LONG    = C_INT
+global constant C_POINTER = #02000004	-- same as C_ULONG
+global constant C_SHORT   = #01000002
+global constant C_UCHAR   = #02000001
+global constant C_UINT    = #02000004
+global constant C_ULONG   = C_UINT
+global constant C_USHORT  = #02000002
+-- Euphoria types for .dll arguments and return value:
+global constant E_INTEGER = #06000004
+global constant E_ATOM    = #07000004
+global constant E_SEQUENCE= #08000004
+global constant E_OBJECT  = #09000004
+global constant NULL = 0 -- NULL pointer
+--------------------------------------------------------------------------------
+--
+--=== Euphoria types
+--
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Variables
+--
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--/*
+--=== Routines
+--*/
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+global function call_back(object id)	-- return a 32-bit call-back address for a Euphoria routine
+    return machine_func(M_CALL_BACK, id)
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameter:
+--# ##id##: either the rid, or, in Windows, if the **cdecl** convention is
+-- required, a **sequence** of the form {'+', id}
+--
+-- Returns:
+--
+-- an integer-valued **atom**, being the machine address for the routine
+--
+-- Notes:
+--
+-- The default calling convention in Windows is **stdcall**.
+--
+-- You can set up as many call-back functions as you like, but they must all be
+-- Euphoria functions (or types) with 0 to 9 arguments.
+-- If your routine has nothing to return (it should really be a procedure),
+-- just return 0 (say), and the calling C routine can ignore the result.
+--
+-- When your routine is called, the argument values will all be 32-bit unsigned
+-- (positive) values. You should declare each parameter of your routine as atom,
+-- unless you want to impose tighter checking.
+-- Your routine must return a 32-bit integer value.
+--
+-- You can also use a call-back address to specify a Euphoria routine as an
+-- exception handler in the Linux/FreeBSD signal() function.
+-- For example, you might want to catch the SIGTERM signal, and do a graceful
+-- shutdown. Some Web hosts send a SIGTERM to a CGI process that has used too
+-- much CPU time.
+--
+-- A call-back routine that uses the **cdecl** convention and returns a
+-- floating-point result, might not work with exw.
+-- This is because the Watcom C compiler (used to build exw) has a non-standard
+-- way of handling **cdecl** floating-point return values.
+--*/
+--------------------------------------------------------------------------------
+global function define_c_func(object lib, object routine_name, sequence arg_types, atom return_type)	-- defines a C function (or machine code routine)
+    return machine_func(M_DEFINE_C, {lib, routine_name, arg_types, return_type})
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+-- 		# ##lib##: either an entry point returned as an atom by ##open_dll##, or ##""## to denote a routine the RAM address of which is known
+-- 		# ##routine_name##: either the name of a procedure in a shared object or the machine address of the procedure
+-- 		# ##arg_types##: a sequence of C-type constants.
+-- 		# ##return_type##: the C-type the function will return
+--
+-- Returns:
+--
+-- 		A small **integer** - the routine id
+--
+-- Errors:
+--
+-- The length of ##name## should not exceed 1_024 characters.
+--
+-- Notes:
+--
+-- When defining a C function, ##lib## is the address of the library containing
+-- the C function, while ##routine_name## is the name of the C function.
+-- ##lib## is a value returned by ##open_dll##.
+-- If the C function can't be found, -1 will be returned as the routine id.
+-- In Windows, you can add a '+' character as a prefix to the function name.
+-- This indicates to Euphoria that the function uses the cdecl calling convention.
+-- By default, Euphoria assumes that C routines accept the stdcall convention.
+--
+-- When defining a machine code routine, ##lib## must be the empty sequence,
+-- "" or {}, and ##routine_name## indicates the address of the machine code
+-- routine.
+-- You can poke the bytes of machine code into a block of memory reserved using
+-- ##allocate##. In Windows, the machine code routine is normally expected to
+-- follow the stdcall calling convention, but if you wish to use the cdecl
+-- convention instead, you can code {'+', address} instead of address for
+-- ##routine_name##.
+--
+-- ##argtypes## is a list of the parameter types for the function.
+-- ##return_type## is the return type of the function.
+-- A list of C types is contained in this module (constants beginning with ##C_##),
+-- and these can be used to
+-- define machine code parameters as well.
+--
+-- The C function that you define could be one created by the Euphoria To C
+-- Translator, in which case you can pass Euphoria data to it, and receive
+-- Euphoria data back. A list of Euphoria types (constants beginning with
+-- ##E_##) is also contained in this module.
+--
+-- You can pass or return any C integer type or pointer type.
+-- You can also pass a Euphoria atom as a C double or float, and get a C double
+-- or float returned to you as a Euphoria atom.
+--
+-- Parameter types which use 4 bytes or less are all passed the same way,
+-- so it is not necessary to be exact when choosing a 4-byte parameter type.
+-- However the distinction between signed and unsigned may be important when
+-- you specify the return type of a function.
+--
+-- Currently, there is no way to pass a C structure by value or get a
+-- C structure as a return result. You can only pass a pointer to a structure
+-- and get a pointer to a structure as a result.
+--
+-- If you are not interested in using the value returned by the C function,
+-- you should instead define it with ##define_c_proc## and call it with ##c_proc##.
+--
+-- Some routines in shared libraries - there are cases in the Windows API -
+-- expect a 64 bit integer to be passed to them as one of its arguments.
+-- There is no such data type in Euphoria, even though it exists in C.
+-- However, there is a workaround:
+--
+--* represent your 64 bit parameter as two consecutive C_LONG parameters.
+-- As mentioned above, this will work whether the integer is specified as
+-- signed or unsigned.
+--* when calling the routine, the first C_LONG parameter must contain the lower
+-- 32 bits of the actual 64 bit parameter, and the second parameter must hold
+-- the upper 32 bits.
+--* do not store the 64 bit integer you supply as an atom, because it would be
+-- encoded in a way the routine you are calling will not understand.
+-- Further, an atom cannot hold more than 53 bits of information, which is too
+-- short for 64 bit data.
+--
+-- If an external routine returns a 64 bit integer, changing the return type
+-- as shown above will not work. You must design a machine code wrapper that
+-- will call the routine (check its call convention under Windows) and retrieve
+-- the integer returned in edx:eax. Then code an Euphoria function that will
+-- ##call## your machine code and retrieve the two parts as two atoms,
+-- returning them as appropriate, typically in a {lower 32 bits, upper 32 bits}
+-- sequence. How you reassemble the two parts will depend on the returned value
+-- being specified as signed or unsigned.
+--
+-- If you use exw to call a cdecl C routine that returns a floating-point value,
+-- it might not work. This is because the Watcom C compiler (used to build exw)
+-- has a non-standard way of handling cdecl floating-point return values.
+--
+-- Passing floating-point values to a machine code routine will be faster if you
+-- use ##c_func## rather than ##call## to call the routine, since you won't have
+-- to use ##atom_to_float64## and ##poke## to get the floating-point values into
+-- memory.
+--*/
+---------------------------------- ----------------------------------------------             
+global function define_c_proc(object lib, object routine_name, sequence arg_types)	-- defines a C function with VOID return type, or where the return value will always be ignored
+    return machine_func(M_DEFINE_C, {lib, routine_name, arg_types, 0})
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+-- 		# ##lib##: either an entry point returned as an atom by ##open_dll##, or ##""## to denote a routine the RAM address of which is known
+-- 		# ##routine_name##: either the name of a procedure in a shared object or the machine address of the procedure
+-- 		# ##arg_types##: a sequence of C-type constants.
+--
+-- Returns:
+--
+-- 		A small **integer** - the routine id
+--
+-- Errors:
+--
+-- The length of ##name## should not exceed 1_024 characters.
+--
+-- Notes:
+--
+-- When defining a C function, ##lib## is the address of the library containing
+-- the C function, while ##routine_name## is the name of the C function.
+-- ##lib## is a value returned by ##open_dll##.
+-- If the C function cannot be found, -1 will be returned as the routine id.
+-- In Windows, you can add a '+' character as a prefix to the function name.
+-- This tells Euphoria that the function uses the cdecl calling convention.
+-- By default, Euphoria assumes that C routines accept the stdcall convention.
+--
+-- When defining a machine code routine, ##lib## must be the empty sequence,
+-- "" or {}, and ##routine_name## indicates the address of the machine code
+-- routine. You can poke the bytes of machine code into a block of memory
+-- reserved using ##allocate##.
+-- In Windows, the machine code routine is normally expected to follow the
+-- stdcall calling convention, but if you wish to use the cdecl convention
+-- instead, you can code {'+', address} instead of address.
+--
+-- ##arg_types## is a list of the parameter types for the function.
+-- A list of C types is contained in dll.e, and shown above.
+-- These can be used to define machine code parameters as well.
+--
+--The C function that you define could be one created by the Euphoria To C
+--Translator, in which case you can pass Euphoria data to it, and receive
+-- Euphoria data back.
+-- A list of Euphoria types is contained in dll.e, and shown above.
+--
+-- You can pass any C integer type or pointer type.
+-- You can also pass a Euphoria atom as a C double or float.
+--
+-- Parameter types which use 4 bytes or less are all passed the same way,
+-- so it is not necessary to be exact.
+--
+-- Currently, there is no way to pass a C structure by value.
+-- You can only pass a pointer to a structure.
+--
+-- The C function can return a value but it will be ignored.
+-- If you want to use the value returned by the C function, you must instead
+-- define it with ##define_c_func## and call it with ##c_func##.
+--
+-- Some routines in shared libraries - there are cases in the Windows API -
+-- expect a 64 bit integer to be passed to them as one of its arguments.
+-- There is no such data type in Euphoria, even though it exists in C.
+-- However, there is a workaround:
+--
+--* represent your 64 bit parameter as two consecutive C_LONG parameters.
+-- As mentioned above, this will work whether the integer is specified as signed
+-- or unsigned.
+--* when calling the routine, the first C_LONG parameter must contain the
+-- lower 32 bits of the actual 64 bit parameter, and the second parameter must
+-- hold the upper 32 bits.
+--* do not store the 64 bit integer you supply as an atom, because it would be
+-- encoded in a way the routine you are calling will not understand.
+-- Further, an atom cannot hold more than 53 bits of information, which is too
+-- short for 64 bit data.
+--
+-- If an external routine returns a 64 bit integer, changing the return type
+-- like shown above will not work. You must design a machine code wrapper that
+-- will call the routine (check its call convention under Windows) and retrieve
+-- the integer returned in edx:eax. Then code an Euphoria function that will
+-- ##call## your machine code and retrieve the two parts as two atoms,
+-- returning them as appropriate, typically in a {lower 32 bits, upper 32 bits}
+-- sequence. How you reassemble the two parts will depend on the returned value
+-- being specified as signed or unsigned.
+--*/
+--------------------------------------------------------------------------------
+global function define_c_var(atom lib, sequence variable_name)	-- gets the memory address where a global C variable is stored
+    return machine_func(M_DEFINE_VAR, {lib, variable_name})
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# ##lib##: the address of a Linux or FreeBSD shared library, or Windows .dll, as
+-- returned by ##open_dll##
+--# ##variable_name##: the name of a global C variable defined within the library
+--
+-- Returns: the memory address of the variable so named
+--
+-- Notes:
+--
+-- Once you have the address of a C variable, and you know its type, you can use
+-- ##peek## and ##poke## to read or write the value of the variable.
+--*/
+--------------------------------------------------------------------------------
+global function open_dll(sequence file_name)	-- opens a Windows dynamic link library (.dll) file, or a Unix shared library (.so) file 
+    return machine_func(M_OPEN_DLL, file_name)
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameter:
+--# ##file_name##: the name of the library (.dll or .so) to be opened
+--
+-- Returns:
+--
+-- an **atom** containing a 32-bit address pointing to the library,
+-- or 0 if the .dll cannot be found.
+--
+-- Notes:
+--
+-- The file name can be expressed either as a relative or as an absolute file name.
+-- Windows will use the normal search path for locating .dll files. 
+--
+-- The value returned by open_dll() can be passed to ##define_c_proc##,
+-- ##define_c_func##, or ##define_c_var##.
+-- 
+-- You can open the same .dll or .so file multiple times.
+-- No extra memory is used and you'll get the same number returned each time. 
+--
+-- Euphoria will close the .dll for you automatically at the end of execution.
+-- (There is no routine for closing a file opened in this way.) 
+--*/
+--------------------------------------------------------------------------------
+--
+--==== Defined instances
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------

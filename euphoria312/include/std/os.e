@@ -1,0 +1,181 @@
+--------------------------------------------------------------------------------
+--	Library: os.e
+--------------------------------------------------------------------------------
+-- Notes:
+--
+--------------------------------------------------------------------------------
+--/*
+--= Library: (euphoria)(include)(std)os.e
+-- Description: Re-allocation of existing Eu3 libraries into standard libraries
+------
+--[[[Version: 3.1.2.5
+--Euphoria Versions: 3.1.1 and later
+--Author: C A Newbould
+--Date: 2018.12.13
+--Status: operational; complete
+--Changes:]]]
+--* added constants to documentation
+--
+------
+--==Euphoria Standard library: os
+-- Operating system helpers.
+--===Constants
+--* ##LINUX##
+--* ##WIN32##
+--
+--===Routines
+-- The following routines are part of the Eu3.1.1 installation and deliver
+-- exactly the same functionality as those defined in Open Euphoria's standard
+--library of the same name.
+--* ##instance##
+--* ##sleep##
+--
+-- Utilise these routines  and the associated constants
+-- by adding the following statement to your module:
+--<eucode>include std/os.e</eucode>
+--
+------
+--*/
+--------------------------------------------------------------------------------
+--/*
+--==Interface
+--*/
+--------------------------------------------------------------------------------
+--
+--=== Includes
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--/*
+--=== Constants
+--*/
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+constant M_INSTANCE = 55
+constant M_SLEEP = 64
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--/*
+--==== OS indicators
+--*/
+--------------------------------------------------------------------------------
+global constant LINUX = 3
+global constant WIN32 = 2
+--------------------------------------------------------------------------------
+--
+--=== EuCANOOP property types
+--
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Euphoria types
+--
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Variables
+--
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--/*
+--=== Routines
+--*/
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+global function instance()	-- returns a handle to the current program
+    return machine_func(M_INSTANCE, 0)
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Returns:
+--
+-- an **integer**: the handle to the current program
+--
+-- This is only valid for MS Windows. For other OSs ##instance## always returns 0.
+--
+-- Notes:
+--
+-- In Windows the ##hInstance## can be passed around to various Windows routines.
+--
+-- Each time a user starts up your program, a different instance will be created.
+--
+-- In C, this is the first parameter to ##WinMain##.
+--*/
+--------------------------------------------------------------------------------
+global procedure sleep(atom t)	-- go to sleep for t seconds, allowing (on WIN32 and Linux) other processes to run
+    if t >= 0 then
+	machine_proc(M_SLEEP, t)
+    end if
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Notes:
+--
+-- On WIN32 and Linux/FreeBSD, the operating system will suspend your process
+-- and schedule other processes.
+--
+-- With multiple tasks, the whole program sleeps, not just the current task.
+-- To make just the current task sleep, you can call
+-- ##task_schedule(task_self(), {t, t})## and then execute ##task_yield##.
+--*/
+--------------------------------------------------------------------------------
+--==== Defined instances
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.4
+--Euphoria Versions: 3.1.1 and later
+--Author: C A Newbould
+--Date: 2018.04.04
+--Status: operational; complete
+--Changes:]]]
+--* documented ##sleep##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.2
+--Euphoria Versions: 3.1.1 and later
+--Author: C A Newbould
+--Date: 2017.08.17
+--Status: operational; incomplete
+--Changes:]]]
+--* defined ##sleep##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.1
+--Euphoria Versions: 3.1.1 and later
+--Author: C A Newbould
+--Date: 2017.08.17
+--Status: operational; incomplete
+--Changes:]]]
+--* defined ##instance##
+--* defined ##LINUX##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.0
+--Euphoria Versions: 3.1.1 and later
+--Author: C A Newbould
+--Date: 2017.08.02
+--Status: created; incomplete
+--Changes:]]]
+--* defined ##WIN32##
+--------------------------------------------------------------------------------

@@ -1,0 +1,1361 @@
+    include std/dll.e
+    include std/machine.e
+
+
+
+
+    --  BOOLEAN   
+    global constant J_TRUE                                  =1
+    global constant J_FALSE                                 =0
+
+
+
+    --  ALIGNMENT   
+    global constant J_LEFT                                  =0
+    global constant J_CENTER                                =1
+    global constant J_RIGHT                                 =2
+    global constant J_TOP                                   =3
+    global constant J_BOTTOM                                =4
+    global constant J_TOPLEFT                               =5
+    global constant J_TOPRIGHT                              =6
+    global constant J_BOTTOMLEFT                            =7
+    global constant J_BOTTOMRIGHT                           =8
+
+
+
+    --  CURSOR   
+    global constant J_DEFAULT_CURSOR                        =0
+    global constant J_CROSSHAIR_CURSOR                      =1
+    global constant J_TEXT_CURSOR                           =2
+    global constant J_WAIT_CURSOR                           =3
+    global constant J_SW_RESIZE_CURSOR                      =4
+    global constant J_SE_RESIZE_CURSOR                      =5
+    global constant J_NW_RESIZE_CURSOR                      =6
+    global constant J_NE_RESIZE_CURSOR                      =7
+    global constant J_N_RESIZE_CURSOR                       =8
+    global constant J_S_RESIZE_CURSOR                       =9
+    global constant J_W_RESIZE_CURSOR                       =10
+    global constant J_E_RESIZE_CURSOR                       =11
+    global constant J_HAND_CURSOR                           =12
+    global constant J_MOVE_CURSOR                           =13
+
+
+
+    --  ORIENTATION   
+    global constant J_HORIZONTAL                            =0
+    global constant J_VERTICAL                              =1
+
+
+
+    --  FONTS   
+    global constant J_PLAIN                                 =0
+    global constant J_BOLD                                  =1
+    global constant J_ITALIC                                =2
+    global constant J_COURIER                               =1
+    global constant J_HELVETIA                              =2
+    global constant J_TIMES                                 =3
+    global constant J_DIALOGIN                              =4
+    global constant J_DIALOGOUT                             =5
+
+
+
+    --  COLORS   
+    global constant J_BLACK                                 =0
+    global constant J_WHITE                                 =1
+    global constant J_RED                                   =2
+    global constant J_GREEN                                 =3
+    global constant J_BLUE                                  =4
+    global constant J_CYAN                                  =5
+    global constant J_MAGENTA                               =6
+    global constant J_YELLOW                                =7
+    global constant J_ORANGE                                =8
+    global constant J_GREEN_YELLOW                          =9
+    global constant J_GREEN_CYAN                            =10
+    global constant J_BLUE_CYAN                             =11
+    global constant J_BLUE_MAGENTA                          =12
+    global constant J_RED_MAGENTA                           =13
+    global constant J_DARK_GRAY                             =14
+    global constant J_LIGHT_GRAY                            =15
+    global constant J_GRAY                                  =16
+
+
+
+    --  BORDERSTYLE   
+    global constant J_NONE                                  =0
+    global constant J_LINEDOWN                              =1
+    global constant J_LINEUP                                =2
+    global constant J_AREADOWN                              =3
+    global constant J_AREAUP                                =4
+
+
+
+    --  MOUSELISTENER   
+    global constant J_MOVED                                 =0
+    global constant J_DRAGGED                               =1
+    global constant J_PRESSED                               =2
+    global constant J_RELEASED                              =3
+    global constant J_ENTERERD                              =4
+    global constant J_EXITED                                =5
+    global constant J_DOUBLECLICK                           =6
+
+
+
+    --  COMPONENTLISTENER   
+
+
+
+    --  J_MOVED   
+    global constant J_RESIZED                               =1
+    global constant J_HIDDEN                                =2
+    global constant J_SHOWN                                 =3
+
+
+
+    --  WINDOWLISTENER   
+    global constant J_ACTIVATED                             =0
+    global constant J_DEACTIVATED                           =1
+    global constant J_OPENED                                =2
+    global constant J_CLOSED                                =3
+    global constant J_ICONIFIED                             =4
+    global constant J_DEICONIFIED                           =5
+    global constant J_CLOSING                               =6
+
+
+
+    --  IMAGEFILEFORMAT   
+    global constant J_GIF                                   =0
+    global constant J_JPG                                   =1
+    global constant J_PPM                                   =2
+    global constant J_BMP                                   =3
+
+
+
+    --  LEDFORMAT   
+    global constant J_ROUND                                 =0
+    global constant J_RECT                                  =1
+
+
+
+    --  RANDOMMAX   
+    global constant J_RANDMAX                               =2147483647
+
+
+
+
+    atom libjapi
+
+    -- local functions 
+
+    function open_japidll()
+    	libjapi = open_dll("japi2.dll")
+    	if libjapi = 0 then
+            return 0
+    	end if
+    	return 1
+    end function
+
+    function cstr2seq(atom ptr)
+    	atom off
+    	sequence cont
+    	off=0
+    	cont={}
+    	while peek(ptr+off)!=0 do
+    		cont=append(cont,peek(ptr+off))
+    		off = off+1
+    	end while
+    	return(cont)
+    end function
+
+    function seq2intarr(sequence s)
+        atom mem  
+        mem = allocate(length(s)*4)
+        if mem then
+            poke4(mem, s)
+        end if
+        return mem
+    end function
+
+
+
+    -- JAPI functions 
+
+
+    global function j_start()
+        if(open_japidll()=0) then return 0 end if
+        return(c_func(define_c_func(libjapi,"j_start",
+                      {},C_INT),
+                      {}))
+    end function
+
+    global function j_connect(object arg0)
+        if(open_japidll()=0) then return 0 end if
+        return(c_func(define_c_func(libjapi,"j_connect",
+                      {C_POINTER},C_INT),
+                      {allocate_string(arg0)}))
+    end function
+
+    global procedure j_setport(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_setport",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global procedure j_setdebug(integer arg0)
+        if(open_japidll()=0) then return end if
+        c_proc(define_c_proc(libjapi,"j_setdebug",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global function j_frame(object arg0)
+        return(c_func(define_c_func(libjapi,"j_frame",
+                      {C_POINTER},C_INT),
+                      {allocate_string(arg0)}))
+    end function
+
+    global function j_button(integer arg0,object arg1)
+        return(c_func(define_c_func(libjapi,"j_button",
+                      {C_INT, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1)}))
+    end function
+
+    global function j_graphicbutton(integer arg0,object arg1)
+        return(c_func(define_c_func(libjapi,"j_graphicbutton",
+                      {C_INT, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1)}))
+    end function
+
+    global function j_checkbox(integer arg0,object arg1)
+        return(c_func(define_c_func(libjapi,"j_checkbox",
+                      {C_INT, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1)}))
+    end function
+
+    global function j_label(integer arg0,object arg1)
+        return(c_func(define_c_func(libjapi,"j_label",
+                      {C_INT, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1)}))
+    end function
+
+    global function j_graphiclabel(integer arg0,object arg1)
+        return(c_func(define_c_func(libjapi,"j_graphiclabel",
+                      {C_INT, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1)}))
+    end function
+
+    global function j_canvas(integer arg0,integer arg1,integer arg2)
+        return(c_func(define_c_func(libjapi,"j_canvas",
+                      {C_INT, C_INT, C_INT},C_INT),
+                      {arg0, arg1, arg2}))
+    end function
+
+    global function j_panel(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_panel",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_borderpanel(integer arg0,integer arg1)
+        return(c_func(define_c_func(libjapi,"j_borderpanel",
+                      {C_INT, C_INT},C_INT),
+                      {arg0, arg1}))
+    end function
+
+    global function j_radiogroup(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_radiogroup",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_radiobutton(integer arg0,object arg1)
+        return(c_func(define_c_func(libjapi,"j_radiobutton",
+                      {C_INT, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1)}))
+    end function
+
+    global function j_list(integer arg0,integer arg1)
+        return(c_func(define_c_func(libjapi,"j_list",
+                      {C_INT, C_INT},C_INT),
+                      {arg0, arg1}))
+    end function
+
+    global function j_choice(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_choice",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_dialog(integer arg0,object arg1)
+        return(c_func(define_c_func(libjapi,"j_dialog",
+                      {C_INT, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1)}))
+    end function
+
+    global function j_window(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_window",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_popupmenu(integer arg0,object arg1)
+        return(c_func(define_c_func(libjapi,"j_popupmenu",
+                      {C_INT, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1)}))
+    end function
+
+    global function j_scrollpane(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_scrollpane",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_hscrollbar(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_hscrollbar",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_vscrollbar(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_vscrollbar",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_line(integer arg0,integer arg1,integer arg2,integer arg3)
+        return(c_func(define_c_func(libjapi,"j_line",
+                      {C_INT, C_INT, C_INT, C_INT},C_INT),
+                      {arg0, arg1, arg2, arg3}))
+    end function
+
+    global function j_printer(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_printer",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_image(integer arg0,integer arg1)
+        return(c_func(define_c_func(libjapi,"j_image",
+                      {C_INT, C_INT},C_INT),
+                      {arg0, arg1}))
+    end function
+
+    global function j_filedialog(integer arg0,object arg1,object arg2)
+        return(cstr2seq(c_func(define_c_func(libjapi,"j_filedialog",
+                      {C_INT, C_POINTER, C_POINTER, C_POINTER},C_POINTER),
+                      {arg0, allocate_string(arg1), allocate_string(arg2), NULL})))
+    end function
+
+    global function j_fileselect(integer arg0,object arg1,object arg2)
+        return(cstr2seq(c_func(define_c_func(libjapi,"j_fileselect",
+                      {C_INT, C_POINTER, C_POINTER, C_POINTER},C_POINTER),
+                      {arg0, allocate_string(arg1), allocate_string(arg2), NULL})))
+    end function
+
+    global function j_messagebox(integer arg0,object arg1,object arg2)
+        return(c_func(define_c_func(libjapi,"j_messagebox",
+                      {C_INT, C_POINTER, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1), allocate_string(arg2)}))
+    end function
+
+    global function j_alertbox(integer arg0,object arg1,object arg2,object arg3)
+        return(c_func(define_c_func(libjapi,"j_alertbox",
+                      {C_INT, C_POINTER, C_POINTER, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1), allocate_string(arg2), allocate_string(arg3)}))
+    end function
+
+    global function j_choicebox2(integer arg0,object arg1,object arg2,object arg3,object arg4)
+        return(c_func(define_c_func(libjapi,"j_choicebox2",
+                      {C_INT, C_POINTER, C_POINTER, C_POINTER, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1), allocate_string(arg2), allocate_string(arg3), allocate_string(arg4)}))
+    end function
+
+    global function j_choicebox3(integer arg0,object arg1,object arg2,object arg3,object arg4,object arg5)
+        return(c_func(define_c_func(libjapi,"j_choicebox3",
+                      {C_INT, C_POINTER, C_POINTER, C_POINTER, C_POINTER, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1), allocate_string(arg2), allocate_string(arg3), allocate_string(arg4), allocate_string(arg5)}))
+    end function
+
+    global function j_progressbar(integer arg0,integer arg1)
+        return(c_func(define_c_func(libjapi,"j_progressbar",
+                      {C_INT, C_INT},C_INT),
+                      {arg0, arg1}))
+    end function
+
+    global function j_led(integer arg0,integer arg1,integer arg2)
+        return(c_func(define_c_func(libjapi,"j_led",
+                      {C_INT, C_INT, C_INT},C_INT),
+                      {arg0, arg1, arg2}))
+    end function
+
+    global function j_sevensegment(integer arg0,integer arg1)
+        return(c_func(define_c_func(libjapi,"j_sevensegment",
+                      {C_INT, C_INT},C_INT),
+                      {arg0, arg1}))
+    end function
+
+    global function j_meter(integer arg0,object arg1)
+        return(c_func(define_c_func(libjapi,"j_meter",
+                      {C_INT, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1)}))
+    end function
+
+    global procedure j_additem(integer arg0,object arg1)
+        c_proc(define_c_proc(libjapi,"j_additem",
+                      {C_INT, C_POINTER}),
+                      {arg0, allocate_string(arg1)})
+    end procedure
+
+    global function j_textfield(integer arg0,integer arg1)
+        return(c_func(define_c_func(libjapi,"j_textfield",
+                      {C_INT, C_INT},C_INT),
+                      {arg0, arg1}))
+    end function
+
+    global function j_textarea(integer arg0,integer arg1,integer arg2)
+        return(c_func(define_c_func(libjapi,"j_textarea",
+                      {C_INT, C_INT, C_INT},C_INT),
+                      {arg0, arg1, arg2}))
+    end function
+
+    global function j_menubar(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_menubar",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_menu(integer arg0,object arg1)
+        return(c_func(define_c_func(libjapi,"j_menu",
+                      {C_INT, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1)}))
+    end function
+
+    global function j_helpmenu(integer arg0,object arg1)
+        return(c_func(define_c_func(libjapi,"j_helpmenu",
+                      {C_INT, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1)}))
+    end function
+
+    global function j_menuitem(integer arg0,object arg1)
+        return(c_func(define_c_func(libjapi,"j_menuitem",
+                      {C_INT, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1)}))
+    end function
+
+    global function j_checkmenuitem(integer arg0,object arg1)
+        return(c_func(define_c_func(libjapi,"j_checkmenuitem",
+                      {C_INT, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1)}))
+    end function
+
+    global procedure j_pack(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_pack",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global procedure j_print(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_print",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global procedure j_playsoundfile(object arg0)
+        c_proc(define_c_proc(libjapi,"j_playsoundfile",
+                      {C_POINTER}),
+                      {allocate_string(arg0)})
+    end procedure
+
+    global procedure j_play(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_play",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global function j_sound(object arg0)
+        return(c_func(define_c_func(libjapi,"j_sound",
+                      {C_POINTER},C_INT),
+                      {allocate_string(arg0)}))
+    end function
+
+    global procedure j_setfont(integer arg0,integer arg1,integer arg2,integer arg3)
+        c_proc(define_c_proc(libjapi,"j_setfont",
+                      {C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3})
+    end procedure
+
+    global procedure j_setfontname(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setfontname",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setfontsize(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setfontsize",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setfontstyle(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setfontstyle",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_seperator(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_seperator",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global procedure j_disable(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_disable",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global procedure j_enable(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_enable",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global function j_getstate(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getstate",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getrows(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getrows",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getcolumns(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getcolumns",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getselect(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getselect",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_isselect(integer arg0,integer arg1)
+        return(c_func(define_c_func(libjapi,"j_isselect",
+                      {C_INT, C_INT},C_INT),
+                      {arg0, arg1}))
+    end function
+
+    global function j_isvisible(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_isvisible",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_isparent(integer arg0,integer arg1)
+        return(c_func(define_c_func(libjapi,"j_isparent",
+                      {C_INT, C_INT},C_INT),
+                      {arg0, arg1}))
+    end function
+
+    global function j_isresizable(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_isresizable",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global procedure j_select(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_select",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_deselect(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_deselect",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_multiplemode(integer arg0,object arg1)
+        c_proc(define_c_proc(libjapi,"j_multiplemode",
+                      {C_INT, C_POINTER}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_insert(integer arg0,integer arg1,object arg2)
+        c_proc(define_c_proc(libjapi,"j_insert",
+                      {C_INT, C_INT, C_POINTER}),
+                      {arg0, arg1, allocate_string(arg2)})
+    end procedure
+
+    global procedure j_remove(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_remove",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_removeitem(integer arg0,object arg1)
+        c_proc(define_c_proc(libjapi,"j_removeitem",
+                      {C_INT, C_POINTER}),
+                      {arg0, allocate_string(arg1)})
+    end procedure
+
+    global procedure j_removeall(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_removeall",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global procedure j_setstate(integer arg0,object arg1)
+        c_proc(define_c_proc(libjapi,"j_setstate",
+                      {C_INT, C_POINTER}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setrows(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setrows",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setcolumns(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setcolumns",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_seticon(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_seticon",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setimage(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setimage",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setvalue(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setvalue",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setradiogroup(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setradiogroup",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setunitinc(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setunitinc",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setblockinc(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setblockinc",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setmin(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setmin",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setmax(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setmax",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setdanger(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setdanger",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setslidesize(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setslidesize",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setcursor(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setcursor",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setresizable(integer arg0,object arg1)
+        c_proc(define_c_proc(libjapi,"j_setresizable",
+                      {C_INT, C_POINTER}),
+                      {arg0, arg1})
+    end procedure
+
+    global function j_getlength(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getlength",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getvalue(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getvalue",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getdanger(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getdanger",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getscreenheight()
+        return(c_func(define_c_func(libjapi,"j_getscreenheight",
+                      {},C_INT),
+                      {}))
+    end function
+
+    global function j_getscreenwidth()
+        return(c_func(define_c_func(libjapi,"j_getscreenwidth",
+                      {},C_INT),
+                      {}))
+    end function
+
+    global function j_getheight(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getheight",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getwidth(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getwidth",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getinsets(integer arg0,integer arg1)
+        return(c_func(define_c_func(libjapi,"j_getinsets",
+                      {C_INT, C_INT},C_INT),
+                      {arg0, arg1}))
+    end function
+
+    global function j_getlayoutid(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getlayoutid",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getinheight(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getinheight",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getinwidth(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getinwidth",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_gettext(integer arg0)
+        return(cstr2seq(c_func(define_c_func(libjapi,"j_gettext",
+                      {C_INT, C_POINTER},C_POINTER),
+                      {arg0, NULL})))
+    end function
+
+    global function j_getitem(integer arg0,integer arg1)
+        return(cstr2seq(c_func(define_c_func(libjapi,"j_getitem",
+                      {C_INT, C_INT, C_POINTER},C_POINTER),
+                      {arg0, arg1, NULL})))
+    end function
+
+    global function j_getitemcount(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getitemcount",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global procedure j_delete(integer arg0,integer arg1,integer arg2)
+        c_proc(define_c_proc(libjapi,"j_delete",
+                      {C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2})
+    end procedure
+
+    global procedure j_replacetext(integer arg0,object arg1,integer arg2,integer arg3)
+        c_proc(define_c_proc(libjapi,"j_replacetext",
+                      {C_INT, C_POINTER, C_INT, C_INT}),
+                      {arg0, allocate_string(arg1), arg2, arg3})
+    end procedure
+
+    global procedure j_appendtext(integer arg0,object arg1)
+        c_proc(define_c_proc(libjapi,"j_appendtext",
+                      {C_INT, C_POINTER}),
+                      {arg0, allocate_string(arg1)})
+    end procedure
+
+    global procedure j_inserttext(integer arg0,object arg1,integer arg2)
+        c_proc(define_c_proc(libjapi,"j_inserttext",
+                      {C_INT, C_POINTER, C_INT}),
+                      {arg0, allocate_string(arg1), arg2})
+    end procedure
+
+    global procedure j_settext(integer arg0,object arg1)
+        c_proc(define_c_proc(libjapi,"j_settext",
+                      {C_INT, C_POINTER}),
+                      {arg0, allocate_string(arg1)})
+    end procedure
+
+    global procedure j_selectall(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_selectall",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global procedure j_selecttext(integer arg0,integer arg1,integer arg2)
+        c_proc(define_c_proc(libjapi,"j_selecttext",
+                      {C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2})
+    end procedure
+
+    global function j_getselstart(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getselstart",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getselend(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getselend",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getseltext(integer arg0)
+        return(cstr2seq(c_func(define_c_func(libjapi,"j_getseltext",
+                      {C_INT, C_POINTER},C_POINTER),
+                      {arg0, NULL})))
+    end function
+
+    global function j_getcurpos(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getcurpos",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global procedure j_setcurpos(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setcurpos",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setechochar(integer arg0,object arg1)
+        c_proc(define_c_proc(libjapi,"j_setechochar",
+                      {C_INT, C_POINTER}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_seteditable(integer arg0,object arg1)
+        c_proc(define_c_proc(libjapi,"j_seteditable",
+                      {C_INT, C_POINTER}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setshortcut(integer arg0,object arg1)
+        c_proc(define_c_proc(libjapi,"j_setshortcut",
+                      {C_INT, C_POINTER}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_quit()
+        c_proc(define_c_proc(libjapi,"j_quit",
+                      {}),
+                      {})
+    end procedure
+
+    global procedure j_kill()
+        c_proc(define_c_proc(libjapi,"j_kill",
+                      {}),
+                      {})
+    end procedure
+
+    global procedure j_setsize(integer arg0,integer arg1,integer arg2)
+        c_proc(define_c_proc(libjapi,"j_setsize",
+                      {C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2})
+    end procedure
+
+    global function j_getaction()
+        return(c_func(define_c_func(libjapi,"j_getaction",
+                      {},C_INT),
+                      {}))
+    end function
+
+    global function j_nextaction()
+        return(c_func(define_c_func(libjapi,"j_nextaction",
+                      {},C_INT),
+                      {}))
+    end function
+
+    global procedure j_show(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_show",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global procedure j_showpopup(integer arg0,integer arg1,integer arg2)
+        c_proc(define_c_proc(libjapi,"j_showpopup",
+                      {C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2})
+    end procedure
+
+    global procedure j_add(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_add",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_release(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_release",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global procedure j_releaseall(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_releaseall",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global procedure j_hide(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_hide",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global procedure j_dispose(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_dispose",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global procedure j_setpos(integer arg0,integer arg1,integer arg2)
+        c_proc(define_c_proc(libjapi,"j_setpos",
+                      {C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2})
+    end procedure
+
+    global function j_getviewportheight(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getviewportheight",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getviewportwidth(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getviewportwidth",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getxpos(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getxpos",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getypos(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getypos",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global procedure j_getpos(integer arg0,object arg1,object arg2)
+        c_proc(define_c_proc(libjapi,"j_getpos",
+                      {C_INT, C_POINTER, C_POINTER}),
+                      {arg0, arg1, arg2})
+    end procedure
+
+    global function j_getparentid(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getparentid",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global procedure j_setfocus(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_setfocus",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global function j_hasfocus(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_hasfocus",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getstringwidth(integer arg0,object arg1)
+        return(c_func(define_c_func(libjapi,"j_getstringwidth",
+                      {C_INT, C_POINTER},C_INT),
+                      {arg0, allocate_string(arg1)}))
+    end function
+
+    global function j_getfontheight(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getfontheight",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getfontascent(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getfontascent",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_keylistener(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_keylistener",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getkeycode(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getkeycode",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getkeychar(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getkeychar",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_mouselistener(integer arg0,integer arg1)
+        return(c_func(define_c_func(libjapi,"j_mouselistener",
+                      {C_INT, C_INT},C_INT),
+                      {arg0, arg1}))
+    end function
+
+    global function j_getmousex(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getmousex",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_getmousey(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getmousey",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global procedure j_getmousepos(integer arg0,object arg1,object arg2)
+        c_proc(define_c_proc(libjapi,"j_getmousepos",
+                      {C_INT, C_POINTER, C_POINTER}),
+                      {arg0, arg1, arg2})
+    end procedure
+
+    global function j_getmousebutton(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getmousebutton",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_focuslistener(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_focuslistener",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global function j_componentlistener(integer arg0,integer arg1)
+        return(c_func(define_c_func(libjapi,"j_componentlistener",
+                      {C_INT, C_INT},C_INT),
+                      {arg0, arg1}))
+    end function
+
+    global function j_windowlistener(integer arg0,integer arg1)
+        return(c_func(define_c_func(libjapi,"j_windowlistener",
+                      {C_INT, C_INT},C_INT),
+                      {arg0, arg1}))
+    end function
+
+    global procedure j_setflowlayout(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setflowlayout",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setborderlayout(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_setborderlayout",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global procedure j_setgridlayout(integer arg0,integer arg1,integer arg2)
+        c_proc(define_c_proc(libjapi,"j_setgridlayout",
+                      {C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2})
+    end procedure
+
+    global procedure j_setfixlayout(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_setfixlayout",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global procedure j_setnolayout(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_setnolayout",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+
+    global procedure j_setborderpos(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setborderpos",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_sethgap(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_sethgap",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setvgap(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setvgap",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setinsets(integer arg0,integer arg1,integer arg2,integer arg3,integer arg4)
+        c_proc(define_c_proc(libjapi,"j_setinsets",
+                      {C_INT, C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3, arg4})
+    end procedure
+
+    global procedure j_setalign(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setalign",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setflowfill(integer arg0,object arg1)
+        c_proc(define_c_proc(libjapi,"j_setflowfill",
+                      {C_INT, C_POINTER}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_translate(integer arg0,integer arg1,integer arg2)
+        c_proc(define_c_proc(libjapi,"j_translate",
+                      {C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2})
+    end procedure
+
+    global procedure j_cliprect(integer arg0,integer arg1,integer arg2,integer arg3,integer arg4)
+        c_proc(define_c_proc(libjapi,"j_cliprect",
+                      {C_INT, C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3, arg4})
+    end procedure
+
+    global procedure j_drawrect(integer arg0,integer arg1,integer arg2,integer arg3,integer arg4)
+        c_proc(define_c_proc(libjapi,"j_drawrect",
+                      {C_INT, C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3, arg4})
+    end procedure
+
+    global procedure j_fillrect(integer arg0,integer arg1,integer arg2,integer arg3,integer arg4)
+        c_proc(define_c_proc(libjapi,"j_fillrect",
+                      {C_INT, C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3, arg4})
+    end procedure
+
+    global procedure j_drawroundrect(integer arg0,integer arg1,integer arg2,integer arg3,integer arg4,integer arg5,integer arg6)
+        c_proc(define_c_proc(libjapi,"j_drawroundrect",
+                      {C_INT, C_INT, C_INT, C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3, arg4, arg5, arg6})
+    end procedure
+
+    global procedure j_fillroundrect(integer arg0,integer arg1,integer arg2,integer arg3,integer arg4,integer arg5,integer arg6)
+        c_proc(define_c_proc(libjapi,"j_fillroundrect",
+                      {C_INT, C_INT, C_INT, C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3, arg4, arg5, arg6})
+    end procedure
+
+    global procedure j_drawoval(integer arg0,integer arg1,integer arg2,integer arg3,integer arg4)
+        c_proc(define_c_proc(libjapi,"j_drawoval",
+                      {C_INT, C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3, arg4})
+    end procedure
+
+    global procedure j_filloval(integer arg0,integer arg1,integer arg2,integer arg3,integer arg4)
+        c_proc(define_c_proc(libjapi,"j_filloval",
+                      {C_INT, C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3, arg4})
+    end procedure
+
+    global procedure j_drawcircle(integer arg0,integer arg1,integer arg2,integer arg3)
+        c_proc(define_c_proc(libjapi,"j_drawcircle",
+                      {C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3})
+    end procedure
+
+    global procedure j_fillcircle(integer arg0,integer arg1,integer arg2,integer arg3)
+        c_proc(define_c_proc(libjapi,"j_fillcircle",
+                      {C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3})
+    end procedure
+
+    global procedure j_drawarc(integer arg0,integer arg1,integer arg2,integer arg3,integer arg4,integer arg5,integer arg6)
+        c_proc(define_c_proc(libjapi,"j_drawarc",
+                      {C_INT, C_INT, C_INT, C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3, arg4, arg5, arg6})
+    end procedure
+
+    global procedure j_fillarc(integer arg0,integer arg1,integer arg2,integer arg3,integer arg4,integer arg5,integer arg6)
+        c_proc(define_c_proc(libjapi,"j_fillarc",
+                      {C_INT, C_INT, C_INT, C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3, arg4, arg5, arg6})
+    end procedure
+
+    global procedure j_drawline(integer arg0,integer arg1,integer arg2,integer arg3,integer arg4)
+        c_proc(define_c_proc(libjapi,"j_drawline",
+                      {C_INT, C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3, arg4})
+    end procedure
+
+    global procedure j_drawpolyline(integer arg0,integer arg1,object arg2,object arg3)
+        c_proc(define_c_proc(libjapi,"j_drawpolyline",
+                      {C_INT, C_INT, C_POINTER, C_POINTER}),
+                      {arg0, arg1, seq2intarr(arg2), seq2intarr(arg3)})
+    end procedure
+
+    global procedure j_drawpolygon(integer arg0,integer arg1,object arg2,object arg3)
+        c_proc(define_c_proc(libjapi,"j_drawpolygon",
+                      {C_INT, C_INT, C_POINTER, C_POINTER}),
+                      {arg0, arg1, seq2intarr(arg2), seq2intarr(arg3)})
+    end procedure
+
+    global procedure j_fillpolygon(integer arg0,integer arg1,object arg2,object arg3)
+        c_proc(define_c_proc(libjapi,"j_fillpolygon",
+                      {C_INT, C_INT, C_POINTER, C_POINTER}),
+                      {arg0, arg1, seq2intarr(arg2), seq2intarr(arg3)})
+    end procedure
+
+    global procedure j_drawpixel(integer arg0,integer arg1,integer arg2)
+        c_proc(define_c_proc(libjapi,"j_drawpixel",
+                      {C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2})
+    end procedure
+
+    global procedure j_drawstring(integer arg0,integer arg1,integer arg2,object arg3)
+        c_proc(define_c_proc(libjapi,"j_drawstring",
+                      {C_INT, C_INT, C_INT, C_POINTER}),
+                      {arg0, arg1, arg2, allocate_string(arg3)})
+    end procedure
+
+    global procedure j_setxor(integer arg0,object arg1)
+        c_proc(define_c_proc(libjapi,"j_setxor",
+                      {C_INT, C_POINTER}),
+                      {arg0, arg1})
+    end procedure
+
+    global function j_getimage(integer arg0)
+        return(c_func(define_c_func(libjapi,"j_getimage",
+                      {C_INT},C_INT),
+                      {arg0}))
+    end function
+
+    global procedure j_getimagesource(integer arg0,integer arg1,integer arg2,integer arg3,integer arg4,object arg5,object arg6,object arg7)
+        c_proc(define_c_proc(libjapi,"j_getimagesource",
+                      {C_INT, C_INT, C_INT, C_INT, C_INT, C_POINTER, C_POINTER, C_POINTER}),
+                      {arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7})
+    end procedure
+
+    global procedure j_drawimagesource(integer arg0,integer arg1,integer arg2,integer arg3,integer arg4,object arg5,object arg6,object arg7)
+        c_proc(define_c_proc(libjapi,"j_drawimagesource",
+                      {C_INT, C_INT, C_INT, C_INT, C_INT, C_POINTER, C_POINTER, C_POINTER}),
+                      {arg0, arg1, arg2, arg3, arg4, seq2intarr(arg5), seq2intarr(arg6), seq2intarr(arg7)})
+    end procedure
+
+    global function j_getscaledimage(integer arg0,integer arg1,integer arg2,integer arg3,integer arg4,integer arg5,integer arg6)
+        return(c_func(define_c_func(libjapi,"j_getscaledimage",
+                      {C_INT, C_INT, C_INT, C_INT, C_INT, C_INT, C_INT},C_INT),
+                      {arg0, arg1, arg2, arg3, arg4, arg5, arg6}))
+    end function
+
+    global procedure j_drawimage(integer arg0,integer arg1,integer arg2,integer arg3)
+        c_proc(define_c_proc(libjapi,"j_drawimage",
+                      {C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3})
+    end procedure
+
+    global procedure j_drawscaledimage(integer arg0,integer arg1,integer arg2,integer arg3,integer arg4,integer arg5,integer arg6,integer arg7,integer arg8,integer arg9)
+        c_proc(define_c_proc(libjapi,"j_drawscaledimage",
+                      {C_INT, C_INT, C_INT, C_INT, C_INT, C_INT, C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9})
+    end procedure
+
+    global procedure j_setcolor(integer arg0,integer arg1,integer arg2,integer arg3)
+        c_proc(define_c_proc(libjapi,"j_setcolor",
+                      {C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3})
+    end procedure
+
+    global procedure j_setcolorbg(integer arg0,integer arg1,integer arg2,integer arg3)
+        c_proc(define_c_proc(libjapi,"j_setcolorbg",
+                      {C_INT, C_INT, C_INT, C_INT}),
+                      {arg0, arg1, arg2, arg3})
+    end procedure
+
+    global procedure j_setnamedcolor(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setnamedcolor",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global procedure j_setnamedcolorbg(integer arg0,integer arg1)
+        c_proc(define_c_proc(libjapi,"j_setnamedcolorbg",
+                      {C_INT, C_INT}),
+                      {arg0, arg1})
+    end procedure
+
+    global function j_loadimage(object arg0)
+        return(c_func(define_c_func(libjapi,"j_loadimage",
+                      {C_POINTER},C_INT),
+                      {allocate_string(arg0)}))
+    end function
+
+    global function j_saveimage(integer arg0,object arg1,integer arg2)
+        return(c_func(define_c_func(libjapi,"j_saveimage",
+                      {C_INT, C_POINTER, C_INT},C_INT),
+                      {arg0, allocate_string(arg1), arg2}))
+    end function
+
+    global procedure j_sync()
+        c_proc(define_c_proc(libjapi,"j_sync",
+                      {}),
+                      {})
+    end procedure
+
+    global procedure j_beep()
+        c_proc(define_c_proc(libjapi,"j_beep",
+                      {}),
+                      {})
+    end procedure
+
+    global function j_random()
+        return(c_func(define_c_func(libjapi,"j_random",
+                      {},C_INT),
+                      {}))
+    end function
+
+    global procedure j_sleep(integer arg0)
+        c_proc(define_c_proc(libjapi,"j_sleep",
+                      {C_INT}),
+                      {arg0})
+    end procedure
+

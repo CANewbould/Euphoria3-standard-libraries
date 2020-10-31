@@ -1,0 +1,221 @@
+--------------------------------------------------------------------------------
+--	Library: msgbox.ew
+--------------------------------------------------------------------------------
+-- Notes:
+--
+-- Needs other routines defined: dll.e, error.e and 
+--------------------------------------------------------------------------------
+--/*
+--= Library: (euphoria)(include)(std)(win32)msgbox.ew
+-- Description: Re-allocation of existing Eu3 libraries into standard libraries
+------
+--[[[Version: 3.1.2.1
+--Euphoria Versions: 3.1.1
+--Author: C A Newbould
+--Date: 2017.10.10
+--Status: operational; complete
+--Changes:]]]
+--* commented out reference to ##crash##
+--
+------
+--==Euphoria Standard library: msgbox
+--===Routines
+-- The following routines are part of the Eu3.1.1 installation and deliver
+-- exactly the same functionality as those defined in Open Euphoria's standard
+--library of the same name.
+--* ##message_box##
+--
+-- Utilise this routine and the associated constants by adding the following
+-- statement to your module:
+--<eucode>include std\win32\machine.e</eucode>
+--
+------
+--*/
+--------------------------------------------------------------------------------
+-- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.0
+--Euphoria Versions: 3.1.1
+--Author: C A Newbould
+--Date: 2017.04.29
+--Status: operational; complete
+--Changes:]]]
+--* created with ##message_box## defined
+--------------------------------------------------------------------------------
+--/*
+--==Interface
+--*/
+--------------------------------------------------------------------------------
+--/*
+--=== Includes
+--*/
+--------------------------------------------------------------------------------
+--include std/dll.e	-- for C_INT, C_LONG, C_POINTER, define_c_func, open_dll
+--include std/error.e	-- for crash
+--include std/machine.e	-- for allocate_string, free
+include std/machine.e	-- for free
+include std/os.e	-- for WIN32
+--------------------------------------------------------------------------------
+--/*
+--=== Constants
+--*/
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+constant FALSE = (0=1)
+constant TRUE = (1=1)
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--/*
+--==== Style values for message_box()
+--*/
+--------------------------------------------------------------------------------
+global constant MB_ABORTRETRYIGNORE = #02 --  Abort, Retry, Ignore
+global constant MB_APPLMODAL = #00       -- User must respond before doing something else
+global constant MB_DEFAULT_DESKTOP_ONLY = #20000    
+global constant MB_DEFBUTTON1 = #00      -- First button is default button
+global constant MB_DEFBUTTON2 = #100      -- Second button is default button
+global constant MB_DEFBUTTON3 = #200      -- Third button is default button
+global constant MB_DEFBUTTON4 = #300   -- Fourth button is default button
+global constant MB_HELP = #4000            -- Windows 95: Help button generates help event
+global constant MB_ICONASTERISK = #40
+global constant MB_ICONERROR = #10 
+global constant MB_ICONEXCLAMATION = #30 -- Exclamation-point appears in the box
+global constant MB_ICONHAND = MB_ICONERROR        -- A hand appears
+global constant MB_ICONINFORMATION = MB_ICONASTERISK	-- Lowercase letter i in a circle appears
+global constant MB_ICONQUESTION = #20    -- A question-mark icon appears
+global constant MB_ICONSTOP = MB_ICONHAND
+global constant MB_ICONWARNING = MB_ICONEXCLAMATION
+global constant MB_OK = #00              -- Message box contains one push button: OK
+global constant MB_OKCANCEL = #01        -- Message box contains OK and Cancel
+global constant MB_RETRYCANCEL = #05     -- Message box contains Retry and Cancel
+global constant MB_RIGHT = #80000        -- Windows 95: The text is right-justified
+global constant MB_RTLREADING = #100000   -- Windows 95: For Hebrew and Arabic systems
+global constant MB_SERVICE_NOTIFICATION = #40000 -- Windows NT: The caller is a service 
+global constant MB_SETFOREGROUND = #10000   -- Message box becomes the foreground window 
+global constant MB_SYSTEMMODAL  = #1000    -- All applications suspended until user responds
+global constant MB_TASKMODAL = #2000       -- Similar to MB_APPLMODAL 
+global constant MB_YESNO = #04           -- Message box contains Yes and No
+global constant MB_YESNOCANCEL = #03      -- Message box contains Yes, No, and Cancel
+--------------------------------------------------------------------------------
+--/*
+--==== Values returned by message_box() - (0 means failure)
+--*/
+--------------------------------------------------------------------------------
+global constant IDABORT = 3  -- Abort button was selected.
+global constant IDCANCEL = 2 -- Cancel button was selected.
+global constant IDIGNORE = 5 -- Ignore button was selected.
+global constant IDNO = 7     -- No button was selected.
+global constant IDOK = 1     -- OK button was selected.
+global constant IDRETRY = 4  -- Retry button was selected.
+global constant IDYES = 6    -- Yes button was selected.
+--------------------------------------------------------------------------------
+--
+--=== Euphoria types
+--
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+type boolean(integer this)
+	return FALSE or TRUE
+end type
+--------------------------------------------------------------------------------
+type string(sequence this)
+	for i = 1 to length(this) do
+	    if sequence(this[i]) then return FALSE end if
+	    if (this[i] < ' ')
+		and (this[i] != 9)
+		and (this[i] != 13)
+		and (this[i] != 10)
+		then
+			return FALSE
+		end if
+	    if this[i]> 254 then return FALSE end if
+	end for
+	return TRUE
+end type
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Variables
+--
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+atom lib
+integer get_active_id
+integer msgbox_id
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--/*
+--=== Routines
+--*/
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+procedure error(string message)
+	crash(message & '\n', {})
+end procedure
+--------------------------------------------------------------------------------
+function is_windows()
+	boolean win
+	win = FALSE
+	if platform() = WIN32 then
+	    lib = open_dll("user32.dll")
+	    msgbox_id = define_c_func(lib, "MessageBoxA", {C_POINTER, C_POINTER, 
+							   C_POINTER, C_INT}, C_INT)
+	    if msgbox_id = -1 then
+			error("Couldn't find MessageBoxA")
+	    else
+	    	win = TRUE
+		end if
+	    get_active_id = define_c_func(lib, "GetActiveWindow", {}, C_LONG)
+	    if get_active_id = -1 then
+			error("Couldn't find GetActiveWindow")
+	    else
+	    	win = TRUE
+		end if
+	else
+		error("** Wrong OS **")
+	end if
+	return win
+end function
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+global function message_box(string text, string title, object style)	-- displays a window with a title, message, buttons and an icon
+    atom ret, text_ptr, title_ptr 
+    integer or_style
+	if is_windows() then    
+	    text_ptr = allocate_string(text)
+	    if not text_ptr then
+			return 0
+	    end if
+	    title_ptr = allocate_string(title)
+	    if not title_ptr then
+			free(text_ptr)
+			return 0
+	    end if
+	    if atom(style) then
+			or_style = style
+	    else
+			or_style = 0
+			for i = 1 to length(style) do
+			    or_style = or_bits(or_style, style[i])
+			end for
+	    end if
+	    ret = c_func(msgbox_id, {c_func(get_active_id, {}), 
+				     text_ptr, title_ptr, or_style})
+	    free(text_ptr)
+	    free(title_ptr)
+	else
+		ret = 0	-- failure: not Windows (for completeness)
+	end if
+    return ret
+end function
+--------------------------------------------------------------------------------

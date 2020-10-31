@@ -1,0 +1,292 @@
+--------------------------------------------------------------------------------
+--	Library: graphics.e
+--------------------------------------------------------------------------------
+-- Notes:
+--
+-- 
+--------------------------------------------------------------------------------
+--/*
+--= Library: (euphoria)(include)(std)graphics.e
+-- Description: Re-allocation of existing Eu3 libraries into standard libraries
+------
+--[[[Version: 3.1.2.9
+--Euphoria Versions: 3.1.1 upwards 
+--Author: C A Newbould
+--Date: 2018.02.25
+--Status: operational; complete
+--Changes:]]]
+--* documented ##wrap##
+--
+------
+--==Euphoria Standard library: graphics
+--===Routines
+-- The following routines are part of the Eu3.1.1 installation and deliver
+-- exactly the same functionality as those defined in Open Euphoria's standard
+--library of the same name.
+--* ##bk_color##
+--* ##get_position##
+--* ##scroll##
+--* ##text_color##
+--* ##wrap##
+--
+-- Utilise these routines by adding the following statement to your module:
+--<eucode>include std/graphics.e</eucode>
+--
+--*/
+--------------------------------------------------------------------------------
+--/*
+--==Interface
+--*/
+--------------------------------------------------------------------------------
+--
+--=== Includes
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Constants
+--
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+constant M_GET_POSITION = 25
+constant M_SCROLL = 8
+constant M_SET_B_COLOR = 10
+constant M_SET_T_COLOR = 9
+constant M_WRAP = 7
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Euphoria types
+--
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+type boolean(integer x)
+    return x = 0 or x = 1
+end type
+--------------------------------------------------------------------------------
+type color(integer x)
+    return x >= 0 and x <= 255
+end type
+--------------------------------------------------------------------------------
+type positive_int(integer x)
+    return x >= 1
+end type
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Variables
+--
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--/*
+--=== Routines
+--*/
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+global procedure bk_color(color c)	-- sets the background colour to c - text or graphics modes
+    machine_proc(M_SET_B_COLOR, c)
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Parameter:
+--# ##c##:  one of the 16 standard colours
+--
+-- Notes:
+--
+-- In pixel-graphics modes the whole screen is affected immediately.
+-- In text modes any new characters that you print will have the new background
+-- colour. In some text modes there might only be 8 distinct background colours
+-- available.
+--
+-- The 16 standard colours are defined as constants above.
+--
+-- In pixel-graphics modes, colour 0 which is normally BLACK, will be set to
+-- the same {r,g,b} palette value as colour number i.
+--
+-- In some pixel-graphics modes, there is a border colour that appears at the
+-- edges of the screen.
+-- In 256-colour modes, this is the 17th colour in the palette.
+-- You can control it as you would any other colour.
+--
+-- In text modes, to restore the original background colour when your program
+-- finishes, e.g. 0 - BLACK, you must call ##bk_color##.
+-- If the cursor is at the bottom line of the screen, you may have to print
+-- something before terminating your program. Printing '\n' may be enough.
+--*/
+--------------------------------------------------------------------------------
+global function get_position()	-- returns {line, column} of current cursor position
+    return machine_func(M_GET_POSITION, 0)
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Returns:
+--
+-- a two-element **sequence** giving the current line and column position of the
+-- cursor, i.e. {line, column}.  
+--
+-- Notes:
+--
+-- ##get_position## works in both text and pixel-graphics modes.
+-- In pixel-graphics modes no cursor will be displayed, but ##get_position## will
+-- return the line and column where the next character will be displayed.
+--
+-- The coordinate system for displaying text is different from the one for
+-- displaying pixels. Pixels are displayed such that the top-left is (x=0,y=0)
+-- and the first coordinate controls the horizontal, left-right location.
+-- In pixel-graphics modes you can display both text and pixels.
+-- ##get_position## returns the current line and column for the text that you are
+-- displaying, not the pixels that you may be plotting.
+-- There is no corresponding routine for getting the current pixel position. 
+--*/
+--------------------------------------------------------------------------------
+global procedure scroll(integer amount, positive_int top_line, positive_int bottom_line)	-- scrolls a region of text on the screen
+	machine_proc(M_SCROLL, {amount, top_line, bottom_line})
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# ##amount##: the number of lines to scroll (positive values for up)
+--# ##top_line##: the top line of the scroll region
+--# ##bottom_line##: the bottom line of the scroll region
+--
+-- New blank lines will appear at the top or bottom.
+--
+-- Notes:
+--
+-- You could perform the scrolling operation using a series of calls to ##puts##,
+-- but ##scroll## is much faster.
+--
+-- The position of the cursor after scrolling is not defined.
+--*/
+--------------------------------------------------------------------------------
+global procedure text_color(color c)	-- sets the foreground text colour
+    machine_proc(M_SET_T_COLOR, c)
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Parameter:
+--# ##c##: the desired colour
+-- Add ##BLINKING## to get blinking text in some modes.
+-- See ##graphcst.e## for codes of possible colours.
+--
+-- Notes:
+--
+-- Text that you print after calling ##text_color## will have the desired colour.
+--
+-- When your program terminates, the last colour that you selected and actually
+-- printed on the screen will remain in effect.
+-- Thus you may have to print something, maybe just '\n', in WHITE to restore
+-- white text, especially if you are at the bottom line of the screen, ready
+-- to scroll up.
+--*/
+--------------------------------------------------------------------------------
+global procedure wrap(boolean on)   -- determines whether text will wrap when hitting the rightmost column
+    machine_proc(M_WRAP, on)
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Parameter:
+--# ##on##: determines if text is wrapped (TRUE) or truncated (FALSE)
+--
+-- Notes:
+--
+-- By default text will wrap.
+--
+-- Use ##wrap## in text modes or pixel-graphics modes when you are displaying
+-- long lines of text.
+--*/
+--------------------------------------------------------------------------------
+--
+--==== Defined instances
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.8
+--Euphoria Versions: 3.1.1 upwards 
+--Author: C A Newbould
+--Date: 2018.02.23
+--Status: operational; complete
+--Changes:]]]
+--* documented ##text_color##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.7
+--Euphoria Versions: 3.1.1 upwards 
+--Author: C A Newbould
+--Date: 2018.02.22
+--Status: operational; complete
+--Changes:]]]
+--* documented ##scroll##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.6
+--Euphoria Versions: 3.1.1 upwards 
+--Author: C A Newbould
+--Date: 2018.02.20
+--Status: operational; complete
+--Changes:]]]
+--* documented ##get_position##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.5
+--Euphoria Versions: 3.1.1 upwards 
+--Author: C A Newbould
+--Date: 2018.01.31
+--Status: operational; complete
+--Changes:]]]
+--* documented ##bk_color##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.4
+--Euphoria Versions: 3.1.1 upwards 
+--Author: C A Newbould
+--Date: 2017.08.31
+--Status: operational; complete
+--Changes:]]]
+--* defined ##wrap##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.3
+--Euphoria Versions: 3.1.1 upwards 
+--Author: C A Newbould
+--Date: 2017.08.22
+--Status: created; incomplete
+--Changes:]]]
+--* defined ##text_color##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.2
+--Euphoria Versions: 3.1.1 upwards 
+--Author: C A Newbould
+--Date: 2017.08.20
+--Status: created; incomplete
+--Changes:]]]
+--* defined ##scroll##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.1
+--Euphoria Versions: 3.1.1 upwards 
+--Author: C A Newbould
+--Date: 2017.08.16
+--Status: created; incomplete
+--Changes:]]]
+--* defined ##get_position##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.0
+--Euphoria Versions: 3.1.1 upwards 
+--Author: C A Newbould
+--Date: 2017.08.10
+--Status: created; incomplete
+--Changes:]]]
+--* defined ##bk_color##
+--------------------------------------------------------------------------------

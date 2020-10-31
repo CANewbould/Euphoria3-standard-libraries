@@ -1,0 +1,229 @@
+--------------------------------------------------------------------------------
+--	Library: error.e
+--------------------------------------------------------------------------------
+-- Notes:
+--
+-- 
+--------------------------------------------------------------------------------
+--/*
+--= Library: (euphoria)(include)(std)error.e
+-- Description: Re-allocation of existing Eu3 libraries into standard libraries
+------
+--[[[Version: 3.1.2.1
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2018.01.20
+--Status: created; complete
+--Changes:]]]
+--* documented ##crash_message##
+--* documented ##crash_routine##
+--
+------
+--==Euphoria Standard library: error
+--===Routines
+-- The following routines are part of the Eu3.1.1 installation and deliver
+-- exactly the same functionality as those defined in Open Euphoria's standard
+--library of the same name.
+--* ##crash_file##
+--* ##crash_message##
+--* ##crash_routine##
+--
+-- Utilise these routines by adding the following statement to your module:
+--<eucode>include std/error.e</eucode>
+--
+--*/
+--------------------------------------------------------------------------------
+-- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.1
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2018.01.20
+--Status: created; incomplete
+--Changes:]]]
+--* documented ##crash_file##
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.0
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2017.08.11
+--Status: created; incomplete
+--Changes:]]]
+--* defined ##crash_file##
+--* defined ##crash_message##
+--* defined ##crash_routine##
+--------------------------------------------------------------------------------
+--/*
+--==Interface
+--*/
+--------------------------------------------------------------------------------
+--
+--=== Includes
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Constants
+--
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+constant M_CRASH_FILE = 57
+constant M_CRASH_MESSAGE = 37
+constant M_CRASH_ROUTINE = 66
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Euphoria types
+--
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Variables
+--
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--/*
+--=== Routines
+--*/
+--------------------------------------------------------------------------------
+--	Local
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--	Shared with other modules
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+global procedure crash_file(sequence file_path)	-- specifies an alternative file path name for any diagnostic information to be written
+    machine_proc(M_CRASH_FILE, file_path)
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Parameter:
+--# ##file_path##: the file name to use for storing diagnostic information
+--
+-- Notes:
+--
+-- The file holds error diagnostics if Euphoria must stop your program due
+-- to a compile-time or run-time error.
+--
+-- Normally Euphoria prints a diagnostic message such as "syntax error" or
+-- "divide by zero" on the screen, as well as dumping debugging information
+-- into **ex.err** in the current directory.
+-- By calling ##crash_file## you can control the directory and file name where
+-- the debugging information will be written.
+--
+-- The ##file_path## value may be empty ("").
+-- In this case no diagnostics or debugging information will be written to
+-- either a file or the screen. It might also be "NUL" or "/dev/null", in which
+-- case diagnostics will be written to the screen, but the **ex.err** information
+-- will be discarded.
+--
+-- You can call c##rash_file## as many times as you like from different parts
+-- of your program.
+-- The file specified by the last call will be the one used.
+--*/
+--------------------------------------------------------------------------------
+global procedure crash_message(sequence msg)	-- specifies a final message to display for your user, if Euphoria has to shut down the current program due to an error
+    machine_proc(M_CRASH_MESSAGE, msg)
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Parameter:
+--# ##msg##: the message to be sent to the screen iif Euphoria
+-- encounters a run-time error
+--
+-- Notes:
+--
+-- Normally Euphoria prints a diagnostic message such as
+-- "subscript out of bounds",
+-- or "divide by zero" on the screen,
+-- as well as dumping debugging information into ex.err.
+-- Euphoria's error messages will not be meaningful for your users unless they
+-- happen to be Euphoria programmers.
+-- By calling ##crash_message## you can control the message that will appear on
+-- the screen. Debugging information will still be stored in ex.err.
+-- You won't lose any information by doing this.
+--
+-- The message may contain '\n', new-line characters, so your message can span
+-- several lines on the screen.
+-- Euphoria will switch to the top of a clear text-mode screen before printing
+-- your message.
+--
+-- You can call ##crash_message## as many times as you like from different parts
+-- of your program.
+-- The message specified by the last call will be the one displayed.
+--*/
+--------------------------------------------------------------------------------
+global procedure crash_routine(integer proc)	-- specifies the routine id of a 1-parameter Euphoria function to call in the event that Euphoria must shut down the current program due to an error
+    machine_proc(M_CRASH_ROUTINE, proc)
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Parameter:
+--# ##proc##: the routine id of the function that you want Euphoria to call in
+-- the event that a run-time error is detected and your program must be shut down
+--
+-- Notes:
+--
+-- Your function should take one argument of type object.
+-- The object that is passed to your function is currently always 0.
+-- In future releases of Euphoria, a more meaningful value may be passed.
+-- You can call ##crash_routine## many times with many different routine id's.
+-- When a crash occurs, Euphoria will call your crash routines, the most
+-- recently specified first, working back to the first one specified.
+-- Normally each routine should return 0.
+-- If any routine returns a non-zero value, the chain of calls will terminate
+-- immediately.
+--
+-- By specifying a crash routine, you give your program a chance to handle fatal
+-- run-time errors, such as subscript out of bounds, in a more graceful way.
+-- You might save some critical data to disc.
+-- You might inform the user about what has happened,
+-- and what he can do about it.
+-- You might also save some key debugging information.
+-- In fact, when your crash routine is called, ex.err will have already been
+-- written. Your crash routine could save ex.err somewhere, or even open it
+-- and extract information from it, such as the error message.
+--
+-- ##crash_routine## can be used with the Interpreter or the Translator.
+-- Translated code does not check for as many run-time errors, and does not
+-- provide a full ex.err dump, but machine-level exceptions are caught, and a
+-- crash routine will give you an excellent opportunity to save some variable
+-- values to disc for debugging.
+--
+-- The developer of a library might want to specify a crash routine for his
+-- library. It could tidy things up by unlocking and closing files,
+-- releasing resources etc.
+-- The developer of the main program could have his own crash routine.
+-- Both routines would be called by Euphoria, unless the first one called
+-- (the last one specified) returned non-zero.
+--
+-- A crash routine cannot resume execution at the point of the crash, but there
+-- is no limitation on what else it can do. It doesn't have to return.
+-- It could even reinitialize global variables and effectively restart the
+-- program.
+--
+-- If another error occurs while a crash routine is running, a new error dump
+-- will occur, but the file name this time will be ex_crash.err, rather than
+-- ex.err. At this point no more calls to crash routines will be allowed.
+-- You will have to look at both ex.err and ex_crash.err to fully understand
+-- what took place.
+--*/
+--------------------------------------------------------------------------------
+--
+--==== Defined instances
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------

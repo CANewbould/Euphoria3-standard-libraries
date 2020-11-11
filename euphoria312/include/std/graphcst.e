@@ -9,7 +9,7 @@
 --= Library: (euphoria)(include)(std)graphcst.e
 -- Description: Re-allocation of existing Eu3 libraries into standard libraries
 ------
---[[[Version:3.1.2.4
+--[[[Version: 3.1.2.4
 --Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
 --Date: 2018.02.24

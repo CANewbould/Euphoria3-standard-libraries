@@ -9,7 +9,7 @@
 --= Library: (euphoria)(include)(std)image.e
 -- Description: Re-allocation of existing Eu3 libraries into standard libraries
 ------
---[[[Version:3.1.2.2
+--[[[Version: 3.1.2.2
 --Euphoria Versions: 3.1.1 upwards 
 --Author: C A Newbould
 --Date: 2018.02.28

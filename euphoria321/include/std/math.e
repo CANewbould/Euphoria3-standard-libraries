@@ -9,13 +9,16 @@
 --= Library: (euphoria)(include)(std)math.e
 -- Description: Re-allocation of existing Eu3 libraries into standard libraries
 ------
---[[[Version: 3.2.1.22
+--[[[Version: 3.2.1.23
 --Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
---Date: 2020.03.06
+--Date: 2020.07.08
 --Status: operational; incomplete
 --Changes:]]]
---* ##rotate_bits## defined
+--* ##gcd## defined
+--* ##max## re-defined
+--* ##min## re-defined
+--* ##product## re-defined
 --
 ------
 --==Euphoria Standard library: math
@@ -38,6 +41,7 @@
 --* ##exp##(atom)	:	atom
 --* ##fib##(integer)    :       atom
 --* ##frac##(object) : object
+--* ##gcd##(atom, atom) : atom
 --* ##intdiv##(object, object)	:	object
 --* ##larger_of##(object, object)	 : object 
 --* ##log10##(object)	:	object
@@ -580,6 +584,50 @@ end function
 -- -- s is {0, -0.5, -0.999, 0.5}</eucode>
 --*/
 --------------------------------------------------------------------------------
+function iif(integer test, object true, object false)
+	if test then return true
+	else return false
+	end if
+end function
+--------------------------------------------------------------------------------
+global function gcd(atom a, atom b) -- the greater common divisor of the two atoms
+	-- use Euclid's algorithm
+	-- ensure positive values
+	a = abs(a)
+	b = abs(b)
+	-- strip off any fractional part
+	a = floor(a)
+	b = floor(b)
+	if b = 0 then return a
+	else return gcd(b, remainder(a, b))
+	end if
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# //a//: one of the atoms to consider
+--# //b// : the other atom.
+--
+-- Returns:
+--
+-- a positive **integer**, which is the largest value that evenly divides
+-- into both parameters.
+--
+-- Notes:
+--
+-- * Signs are ignored; atoms are rounded down to integers.
+-- * If both parameters are zero, 0 is returned.
+-- * If one parameter is zero, the other parameter is returned.
+--
+-- Parameters and return value are atoms so as to take mathematical integers up to ##power(2,53)##.
+--
+-- Examples:
+-- <eucode>? gcd(76.3, -114) --> 38
+-- ? gcd(0, -114) --> 114
+-- ? gcd(0, 0) --> 0 (This is often regarded as an error condition)</eucode>
+--
+--*/
+--------------------------------------------------------------------------------
 global function intdiv(object this, object that)	-- integer division of two objects	
 	return call_func(sign_id, {this}) * ceil(abs(this)/abs(that))
 end function
@@ -666,19 +714,18 @@ end function
 --*/
 --------------------------------------------------------------------------------
 global function max(object this)	-- computes the maximum value among all the argument's elements
-    atom b
-    atom c
+    atom l
+    atom last
     if atom(this) then
 	    return this
-    end if
-    b = mathcons:MINF
-    for i = 1 to length(this) do
-	    c = max(this[i])
-	    if c > b then
-		    b = c
-	    end if
-    end for
-    return b
+	else -- sequence
+		l = length(this)	
+		if l = 0 then return 0
+		elsif l = 1 then return this[1]
+		elsif l = 2 then return iif(this[1] > this[2], this[1], this[2])
+		else last = max(this[1..$-1]) return iif(this[$] > last, this[$], last)
+		end if
+	end if
 end function
 --------------------------------------------------------------------------------
 --/*
@@ -704,20 +751,18 @@ end function
 --*/
 --------------------------------------------------------------------------------
 global function min(object this)	-- computes the minimum value among all the argument's elements
-	atom b
-	atom c
-	if atom(this) then
-			return this
-	end if
-	b = mathcons:PINF
-	for i = 1 to length(this) do
-		c = min(this[i])
-			if c < b then
-				b = c
+	atom l
+	atom last
+	if atom(this) then return this
+	else -- sequence
+		l = length(this)	
+		if l = 0 then return 0
+		elsif l = 1 then return this[1]
+		elsif l = 2 then return iif(this[1] < this[2], this[1], this[2])
+		else last = min(this[1..$-1]) return iif(this[$] < last, this[$], last)
 		end if
-	end for
-	return b
-end function
+	end if
+	end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameter:
@@ -727,7 +772,7 @@ end function
 --
 -- Returns:
 --
---an **atom**: the minimu of all atoms in the object
+--an **atom**: the minimum of all atoms in the object
 --
 -- Notes:
 --
@@ -805,18 +850,18 @@ end function
 --------------------------------------------------------------------------------
 global function product(object this)-- the product of all the atom in the argument, no matter how deeply nested
 	atom ret
-	if atom(this) then
-		return this
+	if atom(this) then return this
+	else -- sequence
+		ret = 1
+		for i = 1 to length(this) do
+			if atom(this[i]) then
+				ret *= this[i]
+			else
+				ret *= product(this[i])
+			end if
+		end for
+		return ret
 	end if
-	ret = 1
-	for i = 1 to length(this) do
-		if atom(this[i]) then
-			ret *= this[i]
-		else
-			ret *= product(this[i])
-		end if
-	end for
-	return ret
 end function
 --------------------------------------------------------------------------------
 --/*
@@ -1157,18 +1202,18 @@ end function
 --------------------------------------------------------------------------------
 global function sum(object thus)	-- compute the sum of all atoms in the argument, no matter how deeply nested
 	atom result
-	if atom(thus) then
-		return thus
+	if atom(thus) then return thus
+	else -- sequence
+		result = 0
+		for i = 1 to length(thus) do
+			if atom(thus[i]) then
+				result += thus[i]
+			else
+				result += sum(thus[i])
+			end if
+		end for
+		return result
 	end if
-	result = 0
-	for i = 1 to length(thus) do
-		if atom(thus[i]) then
-			result += thus[i]
-		else
-			result += sum(thus[i])
-		end if
-	end for
-	return result
 end function
 --------------------------------------------------------------------------------
 --/*
@@ -1240,6 +1285,14 @@ end function
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.22
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2020.03.06
+--Status: operational; incomplete
+--Changes:]]]
+--* ##rotate_bits## defined
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.21
 --Euphoria Versions: 3.1.1 upwards

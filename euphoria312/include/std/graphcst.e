@@ -9,13 +9,13 @@
 --= Library: (euphoria)(include)(std)graphcst.e
 -- Description: Re-allocation of existing Eu3 libraries into standard libraries
 ------
---[[[Version: 3.1.2.4
+--[[[Version: 3.1.2.5
 --Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
---Date: 2018.02.24
+--Date: 2020.11.11
 --Status: operational; complete
 --Changes:]]]
---* corrected errors in defining colour codes
+--* corrected duplicate colour code
 --
 ------
 --==Euphoria Standard library: graphcst
@@ -117,7 +117,6 @@ global constant VC_YPIXELS = 6
 --------------------------------------------------------------------------------
 --	Shared with other modules
 --------------------------------------------------------------------------------
-global integer BLUE
 global integer CYAN
 global integer RED
 global integer BROWN
@@ -156,6 +155,14 @@ end function
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.1.2.4
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2018.02.24
+--Status: operational; complete
+--Changes:]]]
+--* corrected errors in defining colour codes
 --------------------------------------------------------------------------------
 --[[[Version:3.1.2.3
 --Euphoria Versions: 3.1.1 upwards

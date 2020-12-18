@@ -1,0 +1,69 @@
+<!DOCTYPE html 
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+ <title></title>
+ <link rel="stylesheet" media="screen, projection, print" type="text/css" href="style.css"/>
+<!-- source="utils.e.cr" -->
+</head>
+<body>
+
+<a name="_0_librarytestincludeutilse"></a><a name="librarytestincludeutilse"></a><h1>Library: (test)(include)utils.e</h1>
+<p>  Description: A utility offering support for console programs </p>
+
+<hr />
+
+<p>Version: 3.2.1<br />
+Euphoria Versions: Versions: 3.1.1 upwards<br />
+Date: 31 January 2017<br />
+Author: C A Newbould<br />
+Status: updated; operational<br />
+Changes:<br /> </p>
+<ul><li>added procedure <tt>new_screen</tt>
+</li><li>added local function check_default
+</li><li>added local procedure anykey
+</li></ul>
+<hr />
+
+<a name="_1_interface"></a><a name="interface"></a><h2>Interface</h2>
+<a name="_2_includes"></a><a name="includes"></a><h3>Includes</h3>
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">std/types.e </font><font color="#FF0055">-- for boolean, string</font>
+</pre>
+
+<a name="_3_constants"></a><a name="constants"></a><h3>Constants</h3>
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">LINES = </font><font color="#0000FF">repeat</font><font color="#880033">(</font><font color="#330033">'_'</font><font color="#330033">, 80</font><font color="#880033">)</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">EOL = </font><font color="#330033">'\n'</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">WITH = TRUE</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">WITHOUT = FALSE</font>
+</pre>
+
+<a name="_4_euphoriatypes"></a><a name="euphoriatypes"></a><h3>Euphoria types</h3>
+<a name="_5_variables"></a><a name="variables"></a><h3>Variables</h3>
+<a name="_6_routines"></a><a name="routines"></a><h3>Routines</h3>
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">line</font><font color="#880033">(</font><font color="#330033">boolean eof</font><font color="#880033">)  </font><font color="#FF0055">-- prints a line WITH(OUT) EOL</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">heading</font><font color="#880033">(</font><font color="#330033">string name</font><font color="#880033">)  </font><font color="#FF0055">-- prints a heading incorporating the name</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">new_screen</font><font color="#880033">(</font><font color="#330033">string name</font><font color="#880033">)    </font><font color="#FF0055">-- after user intervention, clears the screen and repeats the current heading</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">section</font><font color="#880033">(</font><font color="#330033">string name</font><font color="#880033">)  </font><font color="#FF0055">-- prints a section prompt incorporating the name</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">closing</font><font color="#880033">(</font><font color="#330033">string message</font><font color="#880033">)    </font><font color="#FF0055">-- prints a closing message and waits for a user response</font>
+</pre>
+
+<p>  If <tt>message</tt> = "" then a default of "*** Press any key to close this program ***" is substituted</p>
+</body></html>

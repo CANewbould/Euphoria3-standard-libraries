@@ -1,0 +1,91 @@
+--------------------------------------------------------------------------------
+--	Test application: simple.exw
+--------------------------------------------------------------------------------
+-- Notes:
+--
+-- 
+--------------------------------------------------------------------------------
+-- Version: 3.1.2.1
+-- Date: 2018.12.09
+-- Author: C A Newbould
+-- Status: laid out using template
+--------------------------------------------------------------------------------
+--
+--==Interface
+--
+--------------------------------------------------------------------------------
+--
+--=== Includes
+--
+--------------------------------------------------------------------------------
+include gui\japi.ew   -- for JAPI (check that eu.cfg points to this library)
+--------------------------------------------------------------------------------
+--
+--=== Constants
+--
+--------------------------------------------------------------------------------
+constant KEYBOARD = 0
+constant STDERR = 2
+--------------------------------------------------------------------------------
+--
+--=== Euphoria types
+--
+--------------------------------------------------------------------------------
+--
+--=== Variables
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Routines
+--
+--------------------------------------------------------------------------------
+procedure main(sequence title)  -- use Java convention of main program
+    ----------------
+    -- reserve slots for widgets/events (not necessary in Euphoria 4, but neater)
+    ----------------
+    integer a
+    integer f
+	----------------
+    -- Attempt to link with the JAPI server
+    ----------------
+    if (j_start() = J_FALSE) then
+        ----------------
+        -- Failure to link
+        ----------------
+        puts(STDERR, "*** Cannot connect to JAPI server ***\n")
+        puts(STDERR, "\n*** Press ENTER to abort ***")
+        if getc(KEYBOARD) then end if  -- holds open the terminal window
+        abort(1)
+    else    -- OK
+        ----------------
+        -- set debug level - will open JAPI2 monitor if non-zero
+        ----------------
+        j_setdebug(0)
+        ----------------
+        -- define widgets, arrange layout & initialise
+        ----------------
+        f = j_frame(title)
+        trace(1)
+		----------------
+        -- display the GUI
+        ----------------
+        j_show(f)
+		----------------
+        -- here no event handling - just holding window open
+        ----------------        
+        -- input a
+        a = getc(0)
+        ----------------
+        -- falls through - the end of the event loop - close
+        ----------------
+        j_quit()
+    end if                       
+end procedure
+--------------------------------------------------------------------------------
+--
+--==== Running
+--
+--------------------------------------------------------------------------------
+main("Hello World")   -- enter your own title
+--------------------------------------------------------------------------------

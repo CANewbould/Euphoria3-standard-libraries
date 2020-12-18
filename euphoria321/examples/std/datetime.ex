@@ -9,13 +9,14 @@
 --= Program: (euphoria)(demos)(std)datetime.ex
 -- Description: test program for Eu3's datetime routines
 ------
---[[[Version: 3.2.1.1
+--[[[Version: 3.2.1.2
 --Euphoria Versions: 3.1.1 upwards 
 --Author: C A Newbould
---Date: 2019.03.19
+--Date: 2020.12.18
 --Status: operational
 --Changes:]]]
---* added test of ##format##
+--* added test of ##years_day##
+--* added test of ##add##
 --
 --==Testing datetime routines
 --
@@ -31,7 +32,8 @@
 --=== Includes
 --*/
 --------------------------------------------------------------------------------
-include std/datetime.e   -- for 
+include std/datetime.e   -- for all routines & constants
+--include ../../include/std/datetime.e   -- for all routines & constants
 --------------------------------------------------------------------------------
 --
 --=== Constants
@@ -84,6 +86,7 @@ constant SCREEN = 1
 --------------------------------------------------------------------------------
 procedure main()
     datetime Y2004
+    datetime NextWeek
 	datetime Now
 	Now = now()
 	puts(SCREEN, repeat('-', length(LIB) + 16) & EOL)
@@ -95,10 +98,14 @@ procedure main()
 				{Now[3], Now[2], Now[1], Now[4], Now[5], Now[6]})
 	puts(SCREEN, "--- default 'format()' ---" & EOL)
 	puts(SCREEN, format(Now, "") & EOL)			
+    printf(SCREEN, "It is the %dth day of the year" & EOL, {years_day(Now)})
+    puts(SCREEN, "In a week's time it will be: ")
+    NextWeek = add(Now, 7, DAYS)
+    printf(SCREEN, "%02d-%02d-%4d" & EOL, {NextWeek[3], NextWeek[2], NextWeek[1]})           
     puts(SCREEN, "--- 'days_in_month()' ---" & EOL)
     Y2004 = {2004, 2, 12, 00, 00, 00}
     printf(SCREEN, "In %d there were %d days in Feb and %d overall",
-				{Y2004[1], days_in_month(Y2004), days_in_year(Y2004)})
+                {Y2004[1], days_in_month(Y2004), days_in_year(Y2004)})
 	puts(SCREEN, EOL & repeat('-', length(CLOSURE)))
     puts(SCREEN, CLOSURE)
     if getc(0) then end if
@@ -110,6 +117,14 @@ main()
 --------------------------------------------------------------------------------
 -- Previous versions
 --------------------------------------------------------------------------------
+--[[[Version: 3.2.1.1
+--Euphoria Versions: 3.1.1 upwards 
+--Author: C A Newbould
+--Date: 2019.03.19
+--Status: operational
+--Changes:]]]
+--* added test of ##format##
+--------------------------------------------------------------------------------
 --[[[Version: 3.2.1.0
 --Euphoria Versions: 3.1.1 upwards 
 --Author: C A Newbould
@@ -118,4 +133,4 @@ main()
 --Changes:]]]
 --* created
 --------------------------------------------------------------------------------
-­1.0
+ï¿½1.0

@@ -1,0 +1,924 @@
+--------------------------------------------------------------------------------
+--	Library: iup.ew
+--------------------------------------------------------------------------------
+--/*
+--%%disallow={camelcase}
+--*/
+--------------------------------------------------------------------------------
+--/*
+--=  Library: (include)(gui)(iup)iup.ew
+-- Description: Wrapper library for use with Eu3.1.1 and beyond
+------
+--[[[Version: 3.2.1.19
+-- Euphoria Version: v3.2.1 and later
+-- Date: 2020.01.29
+-- Author: Charles Newbould (Bitbucket user: CANewbould)
+-- Status: incomplete; operational]]]
+------
+-- Changes in this version:
+--* added reference to ##init##
+--
+-- Details of earlier incremental changes can be found embedded in the source
+-- code at the end of this module, with the title "Previous Versions".
+--
+--== The Euphoria IUP Wrapper
+--
+-- The wrapper is called by including the module //iup.ew// in the source code.
+--
+-- To initialised the library call the ##init## procedure, with the single
+-- parameter value is either //""// or is set to a string value which designates
+-- the folder in which the shared library (.dll or .so) is to be found. This
+-- facility allows users to call 32-bit or 64-bit versions of IUP and/or test
+-- their code using different versions of the source IUP library.
+--
+-- A typical IUP code block is as follows:
+--
+--<eucode>include iup.ew
+-- --
+-- IupOpen()
+-- --
+-- -- the IUP-based code
+-- --
+-- IupMainLoop()
+-- --
+-- IupClose()</eucode>
+--
+--*/
+--------------------------------------------------------------------------------
+--/*
+--==Interface
+--*/
+--------------------------------------------------------------------------------
+--/*
+--=== Includes
+--*/
+--------------------------------------------------------------------------------
+include std/dll.e		-- for open_dll, call_back, define_c_func, define_c_proc, C_INT, C_POINTER
+include std/machine.e	-- for allocate, allocate_pointer_array, allocate_string, free, peek_string & poke_pointer
+include std/os.e		-- for platform constants
+include std/types.e     -- for string
+--------------------------------------------------------------------------------
+--/*
+--=== Constants
+--*/
+--------------------------------------------------------------------------------
+--/*
+--  //flags//
+--*/
+--------------------------------------------------------------------------------
+global constant EXIT_SUCCESS = 0
+global constant IUP_IGNORE = -1
+global constant IUP_DEFAULT = -2
+global constant IUP_CLOSE = -3
+--------------------------------------------------------------------------------
+--/*
+--  //IupPopup and IupShowXY Parameter Values//
+--*/
+--------------------------------------------------------------------------------
+global constant IUP_CURRENT = 65531
+global constant IUP_CENTER = #FFFF
+global constant IUP_CENTRE = IUP_CENTER
+--------------------------------------------------------------------------------
+--
+--=== Variables
+--
+--------------------------------------------------------------------------------
+atom iuplib
+integer hIupSetCallback, hIupSetAttribute
+--------------------------------------------------------------------------------
+--/*
+--=== Routines
+--*/
+--------------------------------------------------------------------------------
+--
+--==== initialisation
+--
+--------------------------------------------------------------------------------
+global procedure init(string path)  -- initialises the library call
+    if platform() = WIN32 then
+        iuplib = open_dll(path & "iup.dll")
+    elsif platform() = LINUX then
+        iuplib = open_dll("libiup.so")
+    end if
+    if iuplib < 1 then
+        puts(1, "iup.dll not found\n")
+    end if
+    -- defined reusable ones
+    hIupSetAttribute = define_c_proc(iuplib, "IupSetAttribute",
+                {C_INT, C_POINTER, C_POINTER})
+	hIupSetCallback = define_c_proc(iuplib, "IupSetCallback",
+                {C_INT, C_POINTER, C_INT})
+end procedure
+--------------------------------------------------------------------------------
+--/*
+--==== System routines
+-- These elements act as the sandwich for all IUP programs:
+-- <eucode>
+-- include iup.ew
+-- IupOpen()
+-- ...
+-- IupClose()
+-- </eucode>
+--*/
+--------------------------------------------------------------------------------
+global procedure IupOpen()  -- Initializes the IUP toolkit.
+	integer hIupOpen
+	hIupOpen = define_c_func(iuplib, "IupOpen", {C_INT, C_POINTER}, C_INT)
+	if c_func(hIupOpen, {0, 0}) then end if
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Must be called before any other IUP function except IupVersion.
+--*/
+--------------------------------------------------------------------------------
+global procedure IupClose() -- Ends the IUP toolkit and releases internal memory.
+	integer hIupClose
+	hIupClose = define_c_proc(iuplib, "IupClose", {})
+	c_proc(hIupClose, {})
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- It will also automatically destroy all dialogs and all elements that have names.
+--*/
+--------------------------------------------------------------------------------
+global function IupVersion()    -- Gets the IUP version number.
+    integer hIupVersion
+    hIupVersion = define_c_func(iuplib, "IupVersion", {}, C_INT)
+    return peek_string(c_func(hIupVersion, {}))
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Returns:the version number including the bug fix.
+-- (This defines only the major and minor numbers: for example: "2.7.1".)
+--*/
+--------------------------------------------------------------------------------
+global function IupVersionNumber()    -- Gets the IUP version number.
+    integer hIupVersionNumber
+    hIupVersionNumber = define_c_func(iuplib, "IupVersionNumber", {}, C_INT)
+    return c_func(hIupVersionNumber, {})/100000
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Returns:the version number including the bug fix.
+-- (This defines only the major and minor numbers: for example: "2.7.1".)
+--*/
+--------------------------------------------------------------------------------
+--/*
+-- == Events
+--*/
+--------------------------------------------------------------------------------
+global procedure IupExitLoop()
+	integer hIupExitLoop
+	hIupExitLoop = define_c_proc(iuplib, "IupExitLoop", {})
+	c_proc(hIupExitLoop, {})
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Terminates the current message loop.
+-- It has the same effect of a callback returning IUP_CLOSE.
+--*/
+--------------------------------------------------------------------------------
+global procedure IupMainLoop()
+	integer hIupMainLoop
+	hIupMainLoop = define_c_proc(iuplib, "IupMainLoop", {})
+	c_proc(hIupMainLoop, {})
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Executes the user interaction until one of the following occurs:
+--* a callback returns IUP_CLOSE;
+--* {{{IupExitLoop}}} is called; or
+--* the last visible dialog is hidden.
+--
+-- Must be included if a top-level-window ({{{IupDialog}}}) is included in the program.
+--*/
+--------------------------------------------------------------------------------
+--/*
+-- ==== Callbacks
+--*/
+--------------------------------------------------------------------------------
+global procedure IupSetCallback(atom widget, string action, atom rid)
+	c_proc(hIupSetCallback, {widget, allocate_string(action), rid})
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Associates a callback with an event. To define rid use the function Icallback.
+--*/
+--------------------------------------------------------------------------------
+global function Icallback(atom rid)	--object rtn)
+    return call_back({'+', rid})
+end function
+--------------------------------------------------------------------------------
+--/*
+-- "Converts" a routine_id to the appropriate form. For the library to work in
+-- all versions of Euphoria this function takes an object as its parameter.
+--
+-- Parameter: the identifier of the appropriate callback routine for the given
+-- action.
+--
+-- This is the routine_id of the callback routine
+--
+-- Returns: the callback.
+--
+-- Example of use:
+-- <eucode>
+-- IupOpen()
+-- ...
+-- function btn_cb()
+-- -- action code
+-- end function
+-- btn = IupButton(...)
+-- ...
+-- IupSetCallback(btn, "ACTION", Icallback(routine_id("btn_cb")))
+--
+-- ...
+-- IupMainLoop()    -- needed for IupDialog to work
+-- IupClose()
+-- </eucode>
+--*/
+--------------------------------------------------------------------------------
+--/*
+--==== Routines for attributes
+--*/
+--------------------------------------------------------------------------------
+global function IupGetAttribute(atom widget, string attr)-- gets an interface element attribute.
+	sequence arg
+	integer hIupGetAttribute
+	atom ret
+	arg = {widget, allocate_string(attr)}
+	hIupGetAttribute = define_c_func(iuplib, "IupGetAttribute",
+                {C_INT, C_POINTER}, C_INT)
+	ret = c_func(hIupGetAttribute, arg)
+    if ret then
+        return peek_string(ret)
+    else
+        return ret
+    end if
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Use only when the attribute value is a string.
+--
+-- (For other value types use the relevant procedure. For example:
+-- for an integer value use {{{IupGetInt}}}.)
+--
+-- Use upper-case for the attribute.
+--
+-- Returns: the attribute value or
+-- NULL, if the attribute is not set or does not exist.
+--*/
+--------------------------------------------------------------------------------
+global procedure IupSetAttribute(atom widget, string attr, object val)	-- sets a string attribute value.
+	sequence arg
+    if sequence(val) then val = allocate_string(val) end if
+    arg = {widget, allocate_string(attr), val}
+	c_proc(hIupSetAttribute, arg)
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Sets an interface element attribute.
+--
+-- IupSetAttribute can store only constant strings (like "Title", "30", etc)
+-- or application pointers.
+-- The given value is not duplicated as a string, only a reference is stored.
+-- Therefore, you can store application custom attributes,
+-- such as a context structure to be used in a callback.
+--
+-- (For other value types use the relevant procedure. For example:
+-- for an integer value use {{{IupSetInt}}}.)
+--
+-- Use upper-case for the attribute and for many of the values.
+--
+-- Example:
+-- <eucode>
+-- -- See IUP documentation for relevent attributes for each widget type
+-- IupSetAttribute(dlg, "TITLE", "Simple Dialog")
+-- IupSetAttribute(dlg, "SIZE", "QUARTERxQUARTER")
+-- </eucode>
+--*/
+--------------------------------------------------------------------------------
+global function IupSetAttributes(atom widget, string attrs)
+	integer hIupSetAttributes
+	hIupSetAttributes = define_c_func(iuplib, "IupSetAttributes",
+                {C_INT, C_POINTER}, C_INT)
+    return c_func(hIupSetAttributes, {widget, allocate_string(attrs)})
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Sets several attributes of an interface element.
+--
+-- Parameters: ##attrs## is in the format "A1=V1, A2=V2, ...",
+-- where Ai is the name of an attribute and Vi is its value.
+-- Use upper-case for the attribute and for many of the values.
+--
+-- Returns: a (new) interface element with the modified attributes
+--
+-- Example:
+-- <eucode>
+-- -- Values containing spaces can also be accommodated
+-- edit1 = IupSetAttributes(edit1, "EXPAND=YES, VALUE=\"Number 1\", TABTITLE = First," &
+--           "MULTILINE=YES")
+-- </eucode>
+--*/
+--------------------------------------------------------------------------------
+--/*
+-- ==== Dialogs
+--*/
+--------------------------------------------------------------------------------
+global function IupDialog(atom child)
+    integer hIupDialog
+    hIupDialog = define_c_func(iuplib, "IupDialog", {C_INT}, C_POINTER)
+	return c_func(hIupDialog, {child})
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Creates a dialog element. It manages user interaction with the interface
+-- elements. For any interface element to be shown, it must be encapsulated in a
+-- dialog.
+--
+-- Parameter: the identifier of an interface element.
+-- The dialog has only one child. It can be NULL.
+--
+-- Returns: the identifier of the created element, or NULL if an error occurs.
+--
+-- Example of ##IupDialog## in action:
+-- <eucode>
+-- -- Example 6
+-- -- A simple dialog
+--
+-- include iup.ew
+--
+-- IupOpen()
+-- constant text = IupText(),
+-- 		dlg = IupDialog(text)
+-- IupSetAttribute(text, "EXPAND", "YES")
+-- IupSetAttribute(text, "MULTILINE", "YES")
+-- IupSetAttribute(dlg, "TITLE", "Simple Dialog")
+-- IupSetAttribute(dlg, "SIZE", "QUARTERxQUARTER")
+-- IupShow(dlg)
+-- IupMainLoop()    -- needed for IupDialog to work
+-- IupClose()
+-- </eucode>
+--*/
+--------------------------------------------------------------------------------
+global procedure IupShow(atom dlg)
+	integer hIupShow
+	hIupShow = define_c_proc(iuplib, "IupShow", {C_INT})
+	c_proc(hIupShow, {dlg})
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Displays a dialog in the current position, or changes a control VISIBLE
+-- attribute.
+--*/
+--------------------------------------------------------------------------------
+global procedure IupShowXY(atom dlg, integer x, integer y)
+	integer hIupShowXY
+	hIupShowXY = define_c_proc(iuplib, "IupShowXY",{C_INT, C_INT, C_INT})
+	c_proc(hIupShowXY, {dlg, x, y})
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Displays a dialog in a given position on the screen. The values x and y give
+-- the horizontal and vertical positions respectively of the top left corner of
+-- the window, relative to the origin of the main screen.
+--
+-- Parameters: ##dlg## - identifier of the dialog;
+-- ##x##, ##y## - co-ordinates from the top left corner of the window,
+-- relative to the origin of the main screen.
+--
+-- The following definitions can also be used for ##x##:
+--* IUP_LEFT: Positions the dialog on the left corner of the main screen
+--* IUP_CENTER: Horizontally centralizes the dialog on the main screen
+--* IUP_RIGHT: Positions the dialog on the right corner of the main screen
+--* IUP_MOUSEPOS: Positions the dialog on the mouse position
+--* IUP_CENTERPARENT: Horizontally centralizes the dialog relative to its parent (Since 3.0)
+--* IUP_CURRENT: use the current position of the dialog. This is the default value in Lua if the parameter is not defined. (Since 3.0)
+--
+-- The following definitions can also be used for ##y##:
+--* IUP_TOP: Positions the dialog on the top of the main screen
+--* IUP_CENTER: Vertically centralizes the dialog on the main screen
+--* IUP_BOTTOM: Positions the dialog on the base of the main screen
+--* IUP_MOUSEPOS: Positions the dialog on the mouse position
+--* IUP_CENTERPARENT: Vertically centralizes the dialog relative to its parent (Since 3.0)
+--* IUP_CURRENT: use the current position of the dialog. This is the default value in Lua if the parameter is not defined.(Since 3.0)
+--*/
+--------------------------------------------------------------------------------
+--/*
+-- ==== Dialogs (predefined)
+--*/
+--------------------------------------------------------------------------------
+global function IupAlarm(sequence title, string mess, string b1, string b2, string b3)
+	sequence arg
+	integer hIupAlarm
+    arg = repeat(0, 5)
+	hIupAlarm = define_c_func(iuplib,"IupAlarm",
+			{C_POINTER, C_POINTER, C_POINTER, C_POINTER, C_POINTER},
+			 C_INT)
+	arg[1] = allocate_string(title)
+	arg[2] = allocate_string(mess)
+	arg[3] = allocate_string(b1)
+    if length(b2) then arg[4] = allocate_string(b2) end if
+    if length(b3) then arg[5] = allocate_string(b3) end if
+	return c_func(hIupAlarm, arg)
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Shows a modal dialog containing a message and up to three buttons.
+--
+-- Parameters: the first button is obligatory and is named by ##b1##.
+-- To set the second button set ##b2## to a text string; ditto for ##b3##.
+-- (Note: you cannot set ##b3## and not ##b2##!)
+--
+-- Returns: an integer - the number of the button selected by the user (1, 2 or 3),
+-- or 0 if failed. It fails only if ##b1## is not defined.
+--
+-- Example:
+-- <eucode>
+-- -- Example 2
+--
+-- include iup.ew
+-- IupOpen()
+--
+-- constant b = IupAlarm("IupAlarm Example", "File not saved! Save it now?" ,"Yes" ,"No" ,"Cancel")
+-- -- Shows a message for each selected button
+-- if b = 0 then
+--         IupMessage("Save file", "Dialog closed, without selection")
+-- elsif b = 1 then
+--         IupMessage("Save file", "File saved sucessfully - leaving program")
+-- elsif b = 2 then
+--         IupMessage("Save file", "File not saved - leaving program anyway")
+-- elsif b = 3 then
+--         IupMessage("Save file", "Operation cancelled")
+-- end if
+-- IupClose()
+--</eucode>
+--*/
+--------------------------------------------------------------------------------
+global procedure IupMessage(string title, string mess)
+	integer hIupMessage
+	sequence arg
+	hIupMessage = define_c_proc(iuplib, "IupMessage", {C_POINTER, C_POINTER})
+	arg = {allocate_string(title), allocate_string(mess)}
+	c_proc(hIupMessage, arg)
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Shows a modal dialog containing a message. It simply creates and pops-up an
+-- ##IupMessageDlg##.
+--
+-- Example:
+-- <eucode>
+-- --Example 1
+-- include iup.ew
+-- IupOpen()
+-- IupMessage("YourApp", "Finished Successfully!")
+-- IupClose()
+-- </eucode>
+--*/
+--------------------------------------------------------------------------------
+--/*
+-- == Controls (containers)
+--*/
+--------------------------------------------------------------------------------
+global function IupFill()
+	integer hIupFill
+    hIupFill = define_c_func(iuplib, "IupFill", {}, C_INT)
+	return c_func(hIupFill, {})
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Creates void element, which dynamically occupies empty spaces always trying
+-- to expand itself. Its parent should be an {{{IupHbox, an IupVbox or a
+-- IupGridBox}}}, or else this type of expansion will not work.
+-- If an EXPAND is set on at least one of the other children of the box,
+-- then the fill expansion is ignored.
+--
+-- It does not have a native representation.
+--
+-- Returns: the identifier of the created element, or NULL if an error occurs.
+--*/
+--------------------------------------------------------------------------------
+global function IupFrame(atom child)
+    integer hIupFrame
+	hIupFrame = define_c_func(iuplib, "IupFrame", {C_INT}, C_INT)
+	return c_func(hIupFrame, {child})
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Creates a native container, which draws a frame with a title around its child.
+--
+-- Parameter: ##child## - Identifier of an interface element.
+--
+-- Returns: the identifier of the created element, or NULL if an error occurs.
+--*/
+--------------------------------------------------------------------------------
+global function IupHbox(sequence children)
+	integer hIupHbox
+	atom pchildren, result
+	hIupHbox = define_c_func(iuplib, "IupHboxv", {C_POINTER}, C_INT)
+	pchildren = allocate_pointer_array(children)
+	result = c_func(hIupHbox, {pchildren})
+	free(pchildren)
+	return result
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Creates a void container for composing elements horizontally.
+-- It is a box that arranges the elements it contains from left to right.
+--
+-- Parameter: ##children## - a sequence containing one or more children in the layout.
+-- It can be empty.
+--
+-- Returns: the identifier of the created element, or NULL if an error occurs.
+--*/
+--------------------------------------------------------------------------------
+global function IupVbox(sequence children)
+	integer hIupVbox
+	atom pchildren, result
+	hIupVbox = define_c_func(iuplib, "IupVboxv", {C_POINTER}, C_INT)
+	pchildren = allocate_pointer_array(children)
+	result = c_func(hIupVbox, {pchildren})
+	free(pchildren)
+	return result
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Creates a void container for composing elements vertically.
+-- It is a box that arranges the elements it contains from top to bottom.
+--
+-- Parameter: ##children## - sequence containing one or more children in the layout.
+-- It can be empty.
+--
+-- Returns: the identifier of the created element, or NULL if an error occurs.
+--*/
+--------------------------------------------------------------------------------
+--/*
+-- == Controls (standard)
+--*/
+--------------------------------------------------------------------------------
+global function IupButton(object title)
+	sequence arg
+	integer hIupButton
+	arg = {NULL, NULL}
+	hIupButton = define_c_func(iuplib, "IupButton", {C_POINTER, C_POINTER}, C_INT)
+    if string(title) then
+        arg[1] = allocate_string(title)
+    end if
+	return c_func(hIupButton, arg)
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Creates an interface element that is a button. When selected, this element
+-- activates a function in the application. Its visual presentation can contain
+-- a text and/or an image.
+--
+-- Parameter: ##title##: Text to be shown to the user.
+-- It can be NULL. It will set the TITLE attribute.
+--
+-- Returns: the identifier of the created element, or NULL if an error occurs.
+--*/
+--------------------------------------------------------------------------------
+global function IupLabel(object title)
+	atom arg
+	integer hIupLabel
+	hIupLabel = define_c_func(iuplib, "IupLabel", {C_POINTER}, C_INT)
+	arg = NULL
+    if string(title) then
+        arg = allocate_string(title)
+    end if
+	return c_func(hIupLabel, {arg})
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Creates a label interface element, which displays a separator,
+-- a text or an image.
+--
+-- Parameter: ##title##: Text to be shown on the link. It can be NULL.
+-- It will set the TITLE attribute.
+--
+-- Returns: the identifier of the created element, or NULL if an error occurs.
+--*/
+--------------------------------------------------------------------------------
+--/*
+-- == Resources (handles)
+--*/
+--------------------------------------------------------------------------------
+global procedure IupSetHandle(string title, atom ih)
+	integer hIupSetHandle
+	hIupSetHandle = define_c_proc(iuplib, "IupSetHandle", {C_POINTER, C_INT})
+	c_proc(hIupSetHandle, {allocate_string(title), ih})
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Associates a name with an interface element.
+--
+-- Parameters:
+--* ##title## - name of the interface element;
+--* ##ih## - identifier of the interface element.
+-- Use NULL to remove the association.
+--*/
+--------------------------------------------------------------------------------
+global procedure IupSetAttributeHandle(atom ih, string name, atom ih_named)
+    integer hIupSetAttributeHandle
+    hIupSetAttributeHandle = define_c_proc(iuplib, "IupSetAttributeHandle",
+                {C_INT, C_POINTER, C_INT})
+    c_proc(hIupSetAttributeHandle, {ih, allocate_string(name), ih_named})
+end procedure
+--------------------------------------------------------------------------------
+--/*
+-- Instead of using {{{IupSetHandle and IupSetAttribute}}} with a new creative name,
+-- this function automatically creates a non conflict name and associates
+-- the name with the attribute.
+--
+-- It is very useful for associating images and menus.
+--
+-- Parameters:
+--* ##ih## - identifier of the interface element;
+--* ##name## - name of the attribute;
+--* ##ih_named## - element to associate using a name.
+--
+-- The procedure will not check for inheritance since all the attributes that
+-- associate handles are not inheritable.
+--*/
+--------------------------------------------------------------------------------
+--/*
+-- == Resources (images)
+--*/
+--------------------------------------------------------------------------------
+--/*
+-- == Resources (menus)
+--*/
+--------------------------------------------------------------------------------
+global function IupItem(string title)
+	integer hIupItem
+	hIupItem = define_c_func(iuplib, "IupItem", {C_POINTER, C_POINTER}, C_INT)
+	return c_func(hIupItem, {allocate_string(title), 0})
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Creates an item of the menu interface element.
+-- It is so created that to generate an action, when selected, a specific
+-- call-back function is needed.
+--
+-- Parameter: ##title## - text to be shown on the toggle. It can be NULL.
+-- It will set the TITLE attribute.
+--
+-- Returns: the identifier of the created element, or NULL if an error occurs.
+--*/
+--------------------------------------------------------------------------------
+global function IupMenu(sequence items)
+	integer hIupMenuv
+	atom pItems, result
+	hIupMenuv = define_c_func(iuplib, "IupMenuv", {C_POINTER}, C_INT)
+	pItems = allocate_pointer_array(items)
+	result = c_func(hIupMenuv, {pItems})
+	free(pItems)
+	return result
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Creates a menu element, which groups 3 types of interface elements:
+-- item, submenu and separator.
+-- Any other interface element defined inside a menu will be an error.
+--
+-- Parameter: ##items## - sequence containing one or more items in the menu.
+-- It can be empty.
+--
+-- Returns: the identifier of the created element, or NULL if an error occurs.
+--*/
+--------------------------------------------------------------------------------
+global function IupSeparator()
+	integer hIupSeparator
+	hIupSeparator = define_c_func(iuplib, "IupSeparator", {}, C_INT)
+	return c_func(hIupSeparator, {})
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Creates the separator interface element.
+--It shows a line between two menu items.
+--
+-- Returns: the identifier of the created element, or NULL if an error occurs.
+--*/
+--------------------------------------------------------------------------------
+global function IupSubmenu(string title, atom menu)
+	integer hIupSubmenu
+	hIupSubmenu = define_c_func(iuplib, "IupSubmenu", {C_POINTER, C_INT}, C_INT)
+	return c_func(hIupSubmenu, {allocate_string(title), menu})
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Creates a menu item that, when selected, opens another menu.
+--
+-- Parameters:
+--* ##title## - text to be shown on the toggle. It can be NULL.
+-- It will set the TITLE attribute.
+--* ##menu## - optional child menu identifier. It can be NULL.
+--
+-- Returns: the identifier of the created element, or NULL if an error occurs.
+--*/
+--------------------------------------------------------------------------------
+--/*
+-- Example, using all menu elements:
+-- <eucode>
+-- --menus.exw
+--
+-- include iup.ew
+--
+-- function selected_cb(atom self)
+--     IupMessage("IupMenu", "You selected: " & IupGetAttribute(self, "TITLE") & "!")
+--     return IUP_CONTINUE
+-- end function
+--
+-- function exit_cb()
+--     return IUP_CLOSE
+-- end function
+--
+-- IupOpen()
+--
+-- constant
+-- 	item_open = IupItem("&Open"),
+-- 	item_save = IupItem("&Save"),
+-- 	item_undo = IupItem("&Undo"),
+-- 	item_exit = IupItem("E&xit"),
+-- 	menu_file = IupMenu({item_open, item_save, item_undo, IupSeparator(), item_exit}),
+-- 	sub1_menu = IupSubmenu("File", menu_file),
+-- 	menu = IupMenu({sub1_menu})
+--
+-- IupSetHandle("mymenu", menu)
+--
+-- constant dlg = IupDialog(IupCanvas())
+--
+-- IupSetAttribute(item_undo, "ACTIVE", "NO")
+-- IupSetCallback(item_exit, "ACTION", Icallback(routine_id("exit_cb")))
+-- IupSetCallback(item_open, "ACTION", Icallback(routine_id("selected_cb")))
+-- IupSetCallback(item_save, "ACTION", Icallback(routine_id("selected_cb")))
+-- IupSetAttributes(dlg, "SIZE = HALFxHALF, TITLE = Menus, MENU = mymenu")
+--
+-- IupShow(dlg)
+-- IupMainLoop()
+--
+-- IupClose()
+-- </eucode>
+--*/
+--------------------------------------------------------------------------------
+--/*
+-- == Layout (hierarchy)
+--*/
+--------------------------------------------------------------------------------
+global function IupGetChildCount(atom container)
+    integer hIupGetChildCount
+    hIupGetChildCount = define_c_func(iuplib,"IupGetChildCount", {C_INT}, C_INT)
+    return c_func(hIupGetChildCount, {container})
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Returns the number of children of the given ##container##.
+--
+-- Returns: the number of children.
+--*/
+--------------------------------------------------------------------------------
+--
+-- Previous versions
+--
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.18
+-- Date: 2020.01.25
+-- Author: Charles Newbould (Bitbucket user: CANewbould)
+--Status: ready for release]]]
+------
+-- Changes in this version:
+--* rebuilding from earlier version
+--* ##init## defined
+--* ##IupOpen## defined
+--* ##IupClose## defined
+--* ##IupMessage## defined
+--* ##IupAlarm## defined
+--* ##IupVersion## defined
+--* ##IupVersionNumber## defined
+--* ##IupSetAttribute## defined
+--* ##IupSetCallback## defined
+--* ##Icallback## defined
+--* ##IupDialog## defined
+--* ##IupSetAttributes## defined
+--* ##IupGetAttribute## defined
+--* ##IupExitLoop## defined
+--* ##IupMainLoop## defined
+--* ##IupShowXY## defined
+--* ##IupVbox## defined
+--* ##IupSetHandle## defined
+--* ##IupItem## defined
+--* ##IupMenu## defined
+--* ##IupSeparator## defined
+--* ##IupSubmenu## defined
+--* ##IupLabel## defined
+--* ##IupSetAttributeHandle## defined
+--* ##IupGetChildCount## defined
+--* ##IupShow## defined
+--* ##IupHbox## defined
+--* ##IupFill## defined
+--* ##IupFrame## defined
+--------------------------------------------------------------------------------
+--[[[Version: 3.17.2
+-- Date: 27 February 2017
+-- Author: Charles Newbould (Bitbucket user: CANewbould)
+--Status: ready for release]]]
+------
+-- Changes in this version:
+--* modified IupGetText - problem with OE4 (third parameter - v3.17)
+--------------------------------------------------------------------------------
+--[[[Version: 3.17.1
+-- Date: 20 February 2017
+-- Author: Charles Newbould (Bitbucket user: CANewbould)
+--Status: ready for release]]]
+-- Changes in this version:
+--* Reverted to the earlier definition of Icallback
+--------------------------------------------------------------------------------
+--[[[Version: 3.17.0
+-- Date: 20 January 2017
+-- Author: Charles Newbould (Bitbucket user: CANewbould)
+--Status: ready for release]]]
+------
+-- Changes in this version:
+--* Modified Icallback so that it accepts both a rid and a routine-name
+--------------------------------------------------------------------------------
+-- || Version || Changes | Date |
+-- | 3.16.0 | Added IupGetDialogChild | 08 January 2017
+-- | 3.15.0 | Added IupGetNextChild | 08 January 2017
+-- | 3.14.0 | Modified include calls - all now to std libraries | 08 January 2017
+-- | 3.13.0 | Added IupGetChildCount | 06 January 2017
+-- | 3.12.0 | Added IupInsert | 02 January 2017
+-- | 3.11.1 | Added IUP_BUTTON constants | 21 December 2016
+-- | 3.11.0 | Added IupDetach | 01 December 2016
+-- | 3.10.0 | Added IupAnimatedLabel, IupAppend & IupUser | 21 November 2016
+-- | 3.9.0 | Added IupGetAttributeHandle | 15 November 2016
+-- | 3.8.0 | Added IupSetStrAttribute & IupVal | 12 November 2016
+-- | 3.7.0 | Corrected error in IupLink | 11 November 2016
+-- | 3.7.0 | Added IupLink | 11 November 2016
+-- | 3.6.2 | Moved IupProgressBar from Pre-defined dialogs to Standard Controls category | 11 November 2016
+-- | 3.6.1 | Corrected error in IupZbox | 06 November 2016
+-- | 3.6.0 | Added IupZbox | 03 November 2016
+-- | 3.5.0 | Added IupSpin & IupSpinbox | 02 November 2016
+-- | 3.4.0 | Added IupCBox | 30 October 2016
+-- | 3.3.0 | Added IupFlatButton | 29 October 2016
+-- | 3.2.1 | Modified IupNormaliser | 28 October 2016
+-- | 3.2.0 | Added IupNormaliser | 27 October 2016
+-- | 3.1.0 | Added IupFlatFrame | 27 October 2016
+-- | 3.0.0 | Reverted to previous method for routine definitions | 26 October 2016
+-- | 2.3.1 | Modified IupBackgroundBox & IupColorDlg | 26 October 2016
+-- | 2.3.0 | Added IupScrollBox | 25 October 2016
+-- | 2.2.3 | Modified IupAlarm | 25 October 2016
+-- | 2.2.2 | Modified IupHide, IupPopup, IupSetAttributeHandle, IupSetCallback, IupSetCallbacks, IupSetGlobal, IupShow, IupShowXY & IupTimer | 24 October 2016
+-- | 2.2.1 | Modified IupOpen, IupGetAttribute, IupGetFloat, IupGetInt, IupSetAttribute, IupExitLoop, IupMainLoop & IupDialog  | 24 October 2016
+-- | 2.2.0 | Added IupVersion | 24 October 2016
+-- | 2.1.1 | Modified IupClose & IupSetInt | 24 October 2016
+-- | 2.1.0 | Added IupSetFloat | 24 October 2016
+-- | 2.0.0 | Added proc & func for routine definitions | 24 October 2016
+-- | 1.13.0 | Added IupDetachBox, IupGetDialog, IupRefresh & IupReparent | 19 October 2016
+-- | 1.12.0 | Added IupSplit | 18 October 2016
+-- | 1.11.0 | Added IupGridBox | 18 October 2016
+-- | 1.10.0 | Added IupSbox | 17 October 2016
+-- | 1.9.0 | Added IupGetChildPos & IupGetParent | 16 October 2016
+-- | 1.8.1 | Added alias IUP_CENTRE | 16 October 2016
+-- | 1.8.0 | Added IupRadio & IupToggle | 16 October 2016
+-- | 1.7.1 | Version numbering system changed | 16 October 2016
+-- | 1.7.0 | Added IupExpander | 16 October 2016
+-- | 1.6.0 | Added IupGetChild, IupImageRGB, IupImageRGBA, IupSetAttributeHandle & IupSetGlobal | 11 October 2016
+-- | 1.5.2| Added further Key constant | 26 September 2016
+-- | 1.5.1 | Added Key constants | 20 September 2016
+-- | 1.5.0 | IupSetLanguage added | 04 September 2016
+-- | 1.4.0 | EXIT_SUCCESS, IupGetFloat & IupImageLibOpen added; IupButton modified | 03 September 2016
+-- | 1.3.0 | IupLabel edited; IupImage and function allocate_image added | 28 August 2016
+-- | 1.2.0 | IupBackgroundBox added; example included | 24 July 2016
+-- | 1.1.0 | IupTree added; IupCalendar example incorporated | 21 July 2016
+-- | 1.0.1 | removed allocate_pointer_array, peek_string & poke_pointer; added more examples | 21 July 2016
+-- | 1.0.0 | Public issue | 21 July 2016
+-- | 0.19.1 | Added more illustrative examples | 21 July 2016
+-- | 0.19.0 | IupProgressBar added | 21 July 2016
+-- | 0.18.0 | added IupTimer & IupDestroy | 20 July 2016
+-- | 0.17.0 | added IupTabs | 20 July 2016
+-- | 0.16.1 | Updated documentation for dialogs; illustrative examples added to the library file (eudoc)  | 20 July 2016
+-- | 0.16.0 | IupGetParam added - allows unlimited number of format items | 20 July 2016
+-- |0.15.0 | added IupSetCallbacks, IupCalendar, IupDatePick, IupFill & IupGetBrother | 07 July 2016
+-- |0.14.0 | added IupGetHandle, IupGetName & IupSeparator; corrected IupSetAttribute | 06 July 2016
+-- |0.13.0 | added IupCanvas, IupMenu, IupSubmenu & IupSetHandle | 04 July 2016
+-- |0.12.0 | added IupProgressDlg, IupExitLoop, IupGetInt. IupSetInt & IupItem; modified IupSetAttribute | 04 July 2016
+-- |0.11.0 | corrected error in IupAlarm; added IupFontDlg; modified IupGetAttribute | 03 July 2016
+-- |0.10.0 | completed documentation; added IupMessageDlg | 01 July 2016
+-- | 0.9.1 | modified IupList & IupText; added documentation| 30 June 2016
+-- | 0.9.0 | added IupColorDlg | 28 June 2016
+-- | 0.8.0 | added IupList | 27 June 2016
+-- | 0.7.0 | added IupFrame & IupHide | 25 June 2016
+-- | 0.6.0 | added IupFileDlg, IupPopup & IupSetAttributes | 24 June 2016
+-- | 0.5.0 | added IupGetAttribute| 22 June 2016
+-- | 0.4.0 | added IupText| 22 June 2016
+-- | 0.3.0 | added IupGetFile| 21 June 2016
+-- | 0.2.0 | added IupGetText| 20 June 2016
+-- | 0.1.0 | minimal functionality| 19 June 2016
+--**
+-- This documentation needs to be read alongside the official Iup documentation,
+-- at [[http://webserver2.tecgraf.puc-rio.br/iup/]]
+--**
+--== Issues (21 July 2016)
+-- none
+--------------------------------------------------------------------------------

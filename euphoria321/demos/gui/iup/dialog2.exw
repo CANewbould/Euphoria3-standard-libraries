@@ -1,0 +1,64 @@
+--------------------------------------------------------------------------------
+-- dialog2.exw
+--------------------------------------------------------------------------------
+-- Another IupDialog Example in Euphoria
+--------------------------------------------------------------------------------
+-- Version 3.2.1.1
+-- Dated 2020.01.25
+-- Author C A Newbould
+-- Status: modified from v4.0.5
+--------------------------------------------------------------------------------
+-- includes
+--------------------------------------------------------------------------------
+include gui/iup/iup.ew as IUP
+--------------------------------------------------------------------------------
+-- types
+--------------------------------------------------------------------------------
+type Ihandle( object x )
+    return 1
+end type
+--------------------------------------------------------------------------------
+integer cb_quit
+--------------------------------------------------------------------------------
+-- routines
+--------------------------------------------------------------------------------
+function  quit_cb(object void)
+  return IUP_CLOSE 
+end function
+cb_quit = routine_id("quit_cb") 
+--------------------------------------------------------------------------------
+procedure main(string title)
+    Ihandle  dialog,  quit_bt,  vbox, label_long 
+    -- initialise
+    IUP:init("")
+    -- open library 
+    IupOpen()
+    -- Creating dialog's content 
+    quit_bt = IupButton("Quit") 
+    IupSetCallback(quit_bt, "ACTION", Icallback(cb_quit)) 
+    -- the container with a label and the button  
+    label_long = IupLabel("Very Long Text Label")
+    label_long = IupSetAttributes(label_long, "EXPAND=YES, ALIGNMENT=ACENTER")
+    vbox = IupVbox({label_long, quit_bt}) 
+    IupSetAttribute(vbox, "ALIGNMENT", "ACENTER") 
+    IupSetAttribute(vbox, "MARGIN", "10x10") 
+    IupSetAttribute(vbox, "GAP", "5") 
+    -- Creating the dialog   
+    dialog = IupDialog(vbox) 
+    IupSetAttribute(dialog, "TITLE", title) 
+    IupSetAttributeHandle(dialog, "DEFAULTESC", quit_bt) 
+    IupSetAttribute( dialog, "SIZE", "200x100" )    --//TOM added
+    printf(1, "The vbox has %d children.\n", {IupGetChildCount(vbox)})
+    -- Shows dialog in the default position
+    IupShow(dialog) 
+    -- Initializes IUP main loop
+    IupMainLoop() 
+    -- Finishes IUP 
+    IupClose()   
+    -- Program finished successfully
+end procedure
+--------------------------------------------------------------------------------
+-- execution
+--------------------------------------------------------------------------------
+main("Dialog Title")
+--------------------------------------------------------------------------------

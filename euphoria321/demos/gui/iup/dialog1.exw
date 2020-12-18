@@ -1,0 +1,65 @@
+--------------------------------------------------------------------------------
+-- dialog1.exw
+--------------------------------------------------------------------------------
+--  IupDialog: Example in Open Euphoria 4
+-- Creates a dialog showing an icon, the "DEFAULTESC" attribute and a simple menu
+-- 
+--------------------------------------------------------------------------------
+-- Version 3.2.1.1
+-- Dated 2020.01.25
+-- Author C A Newbould
+-- Status: modified from v4.0.5
+--------------------------------------------------------------------------------
+-- includes
+--------------------------------------------------------------------------------
+include gui/iup/iup.ew as IUP
+--------------------------------------------------------------------------------
+type Ihandle(object x)
+    return 1
+end type
+--------------------------------------------------------------------------------
+integer cb_quit
+--------------------------------------------------------------------------------
+-- routines
+--------------------------------------------------------------------------------
+function quit_cb()
+  return IUP_CLOSE 
+end function
+cb_quit = routine_id("quit_cb") 
+--------------------------------------------------------------------------------
+procedure main(string title) 
+    Ihandle  dialog,  quit_bt
+    Ihandle  menu,  submenu,  options, ext
+    -- initialise
+    IUP:init("")
+    -- open library 
+    IupOpen()
+    -- Creating dialog's content 
+    quit_bt = IupButton("Quit")
+    IupSetCallback(quit_bt, "ACTION", Icallback(cb_quit)) 
+    IupSetHandle("quit", quit_bt) 
+    --  Creating dialog's menu
+    ext = IupItem("Exit") 
+    options = IupMenu({ext}) 
+    IupSetCallback(ext, "ACTION", Icallback(cb_quit)) 
+    submenu = IupSubmenu("File", options) 
+    menu = IupMenu({submenu}) 
+    IupSetHandle("menu", menu) 
+    --  Creating main dialog  
+    dialog = IupDialog(IupVbox({quit_bt})) 
+    IupSetAttribute(dialog, "TITLE", title) 
+    IupSetAttribute(dialog, "MENU", "menu") 
+    IupSetAttribute(dialog, "CURSOR", "CROSS") 
+    IupSetAttribute(dialog, "DEFAULTESC", "quit")
+    IupSetAttribute(dialog, "SIZE", "QUARTERxQUARTER")
+    IupShowXY(dialog, IUP_CENTER, IUP_CENTER) 
+    -- activate event loop
+    IupMainLoop() 
+    -- close library 
+    IupClose() 
+end procedure
+--------------------------------------------------------------------------------
+--- Running
+--------------------------------------------------------------------------------
+main("IupDialog")
+--------------------------------------------------------------------------------

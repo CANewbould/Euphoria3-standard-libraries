@@ -1,0 +1,93 @@
+--------------------------------------------------------------------------------
+-- Demonstration: alarm.exw
+--------------------------------------------------------------------------------
+-- Notes:
+--
+-- Tested on v3.2.1 & v4.0.5
+--------------------------------------------------------------------------------
+--/*
+--= Program: (euphoria321)(demos)(gui)(iup)alarm.exw
+-- Description: shows a dialog similar to the one shown when you exit a program
+-- without saving.
+------
+--[[[Version: 3.2.1.3
+--Euphoria Versions: 3.2.1 upwards 
+--Author: C A Newbould
+--Date: 2020.01.25
+--Status: operational
+--Changes:]]]
+--* added call to ##init##
+--
+------
+--*/
+--------------------------------------------------------------------------------
+--/*
+--==Interface
+--*/
+--------------------------------------------------------------------------------
+--/*
+--=== Includes
+--*/
+--------------------------------------------------------------------------------
+include gui/iup/iup.ew as IUP
+--------------------------------------------------------------------------------
+--
+--=== Constants
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Euphoria types
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Variables
+--
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+--=== Routines
+--
+--------------------------------------------------------------------------------
+procedure main(string title)
+    integer alarm
+    IUP:init("")
+    -- Initializes IUP
+    IupOpen()
+    alarm = IupAlarm(title, "File not saved! Save it now?", "Yes", "No", "Cancel")
+        -- Shows a message for each selected button
+    if alarm = 1 then
+        IupMessage ("Save file", "File saved successfully - leaving program")
+        --break
+    elsif alarm = 2 then
+        IupMessage ("Save file", "File not saved - leaving program anyway")
+        --break
+    elsif alarm = 3 then
+        IupMessage ("Save file", "Operation cancelled")
+        --break
+    end if
+    -- Finishes IUP
+    IupClose()
+    -- Program finished successfully
+end procedure
+--------------------------------------------------------------------------------
+-- execution
+--------------------------------------------------------------------------------
+main("IupAlarm Example")
+--------------------------------------------------------------------------------
+-- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.2
+--Euphoria Versions: 3.2.1 upwards 
+--Author: C A Newbould
+--Date: 2020.01.13
+--Status: operational
+--Changes:]]]
+--* copied from v4.0.5
+--* changed from //switch// to //if//
+--------------------------------------------------------------------------------
+--[[[Version: 4.0.5.0
+-- Dated 2018.02.12
+-- Author C A Newbould
+--------------------------------------------------------------------------------

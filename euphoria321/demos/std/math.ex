@@ -9,13 +9,13 @@
 --= Program: (euphoria)(examples)(std)math.ex
 -- Description: test program for Eu3's math routines
 ------
---[[[Version: 3.2.1.12
+--[[[Version: 3.2.1.13
 --Euphoria Versions: 3.1.1 upwards 
 --Author: C A Newbould
---Date: 2020.03.08
+--Date: 2020.05.03
 --Status: operational
 --Changes:]]]
---* added tests for ##rotate_bits##
+--* added tests for ##gcd##
 --
 --==Testing math routines
 --
@@ -195,6 +195,11 @@ procedure main()
 	printf(SCREEN, "rotate_bits(8, -4) = %x\n", {rotate_bits(8, -4)})
 --	printf(SCREEN, "rotate_bits(0xFE427AAC, -7) = #%x\n", {rotate_bits(#FE427AAC, -7)})
 	printf(SCREEN, "rotate_bits(-7, -3) = %x\n", {rotate_bits(-7, -3)})
+--	new_page()
+	sub_heading("gcd")
+	printf(SCREEN, "gcd(76.3, -114) = %d\n", {gcd(76.3, -114)})	-- 38
+	printf(SCREEN, "gcd(0, -114) = %d\n", {gcd(0, -114)})	-- 114
+	printf(SCREEN, "gcd(0, 0) = %d\n", {gcd(0, 0)})	-- 0 (This is often regarded as an error condition)
     puts(SCREEN, EOL & repeat('-', length(CLOSURE)))
     puts(SCREEN, CLOSURE)
     if getc(0) then end if
@@ -205,6 +210,14 @@ end procedure
 main()
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.12
+--Euphoria Versions: 3.1.1 upwards 
+--Author: C A Newbould
+--Date: 2020.03.08
+--Status: operational
+--Changes:]]]
+--* added tests for ##rotate_bits##
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.11
 --Euphoria Versions: 3.1.1 upwards 

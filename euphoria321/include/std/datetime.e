@@ -10,16 +10,14 @@
 -- Description: Re-writing (where necessary) of existing OE4 standard libraries
 -- for use with Eu3
 ------
---[[[Version: 3.2.1.5
+--[[[Version: 3.2.1.6
 --Euphoria Versions: 3.1.1 and after
 --Author: C A Newbould
---Date: 2019.03.19
+--Date: 2020.12.18
 --Status: operational; incomplete
 --Changes:]]]
---* ##days_in_month## defined
---* ##days_in_year## defined
---* ##format## defined
---* ##to_unix## defined
+--* ##years_day## defined
+--* ##add## defined
 --
 ------
 --==Euphoria Standard library: datetime
@@ -37,6 +35,7 @@
 --===Routines
 -- The following routines are part of the Open Euphoria's standard
 -- library and has been tested/amended to function with Eu3.1.1.
+--* ##add##
 --* ##days_in_month##
 --* ##days_in_year##
 --* ##format##
@@ -46,6 +45,7 @@
 --* ##new_time##
 --* ##now##
 --* ##weeks_day##
+--* ##years_day##
 --
 -- Utilise this routine by adding the following statement to your module:
 --<eucode>include std/datetime.e</eucode>
@@ -238,7 +238,108 @@ function tolower(object x)
 	return x + (x >= 'A' and x <= 'Z') * ('a' - 'A')
 end function
 --------------------------------------------------------------------------------
+function julianDate(integer j) -- returns a Date
+	integer year, doy
+	-- Take a guesstimate at the year -- this is usually v.close
+	if j >= 0 then
+		year = floor(j / (12 * 30.43687604)) + 1
+	else
+		year = -floor(-j / 365.25) + 1
+	end if
+	-- Calculate the day in the guessed year
+	doy = j - (julianDay({year, 1, 1}) - 1) -- = j - last day of prev year
+	-- Correct any errors
+	-- The guesstimate is usually so close that these whiles could probably
+	-- be made into ifs, but I haven't checked all possible dates yet... ;)
+	while doy <= 0 do -- we guessed too high for the year
+		year -= 1
+		doy += daysInYear(year)
+	end while
+	while doy > daysInYear(year) do -- we guessed too low
+		doy -= daysInYear(year)
+		year += 1
+	end while
+	-- guess month
+	if doy <= daysInMonth(year, 1) then
+		return {year, 1, doy}
+	end if
+	for month = 2 to 12 do
+		doy -= daysInMonth(year, month-1)
+		if doy <= daysInMonth(year, month) then
+			return {year, month, doy}
+		end if
+	end for
+	-- Skip to the next year on overflow
+	-- The alternative is a crash, listed below
+	return {year+1, 1, doy-31}
+end function
+--------------------------------------------------------------------------------
+function secondsToDateTime(atom seconds) -- returns a DateTime
+	integer days, minutes, hours
+	days = floor(seconds/DAY_LENGTH_IN_SECONDS)
+	seconds = remainder(seconds, DAY_LENGTH_IN_SECONDS)
+	hours = floor(seconds/3600)
+	seconds -= hours * 3600
+	minutes = floor(seconds/60)
+	seconds -= minutes* 60
+	return julianDate(days) & {hours, minutes, seconds}
+end function
+--------------------------------------------------------------------------------
 --	Shared with other modules
+--------------------------------------------------------------------------------
+global function add(datetime dt, object qty, integer interval) -- adds a number of intervals to a datetime
+	integer inc
+	if interval = SECONDS then
+	elsif interval = MINUTES then
+		qty *= 60
+	elsif interval = HOURS then
+		qty *= 3600
+	elsif interval = DAYS then
+		qty *= 86400
+	elsif interval = WEEKS then
+		qty *= 604800
+	elsif interval = MONTHS then
+		if qty > 0 then
+			inc = 1
+		else
+			inc = -1
+			qty = -(qty)
+		end if
+		for i = 1 to qty do
+			if inc = 1 and dt[MONTH] = 12 then
+				dt[MONTH] = 1
+				dt[YEAR] += 1
+			elsif inc = -1 and dt[MONTH] = 1 then
+				dt[MONTH] = 12
+				dt[YEAR] -= 1
+			else
+				dt[MONTH] += inc
+			end if
+		end for
+		return dt
+	elsif interval = YEARS then
+		dt[YEAR] += qty
+		if isLeap(dt[YEAR]) = 0 and dt[MONTH] = 2 and dt[DAY] = 29 then
+			dt[MONTH] = 3
+			dt[DAY] = 1
+		end if
+		return dt
+	elsif interval = DATE then
+		qty = datetimeToSeconds(qty)
+	end if
+	return secondsToDateTime(datetimeToSeconds(dt) + qty)
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# //dt//: the datetime to be addressed
+--# //qty//: the (positive) number of intervals to add
+--# //interval//: which interval unit (eg SECONDS, WEEKS)
+--
+-- Returns:
+--
+-- a **sequence**: the **datetime** representing the new moment in time
+--*/
 --------------------------------------------------------------------------------
 global function days_in_month(datetime dt)	-- returns the number of days in the month
 	return daysInMonth(dt[YEAR], dt[MONTH])
@@ -342,7 +443,7 @@ end function
 --/*
 -- Returns:
 --
--- a **datetime** corresponding to the current moment in time.
+-- a **datetime** corresponding to the current moment in time
 --*/
 --------------------------------------------------------------------------------
 global function to_unix(datetime dt)	-- converts a datetime value to the Unix numeric format (seconds since ##EPOCH_1970##)
@@ -369,6 +470,19 @@ end function
 -- Returns:
 --
 -- an **integer**, in the range 1 (Sunday) to 7 (Saturday)
+--*/
+--------------------------------------------------------------------------------
+global function years_day(datetime dt) -- gets the Julian day of year of the supplied date
+	return julianDayOfYear({dt[YEAR], dt[MONTH], dt[DAY]})	
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# ##dt##: the datetime to be queried
+--
+-- Returns:
+--
+-- an **integer**, in the range 1 to 366
 --*/
 --------------------------------------------------------------------------------
 global function format(datetime d, sequence pattern)	-- formats the date according to the format pattern string
@@ -503,6 +617,17 @@ end function
 --*/
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.5
+--Euphoria Versions: 3.1.1 and after
+--Author: C A Newbould
+--Date: 2019.03.19
+--Status: operational; incomplete
+--Changes:]]]
+--* ##days_in_month## defined
+--* ##days_in_year## defined
+--* ##format## defined
+--* ##to_unix## defined
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.4
 --Euphoria Versions: 3.1.1 and after

@@ -1,0 +1,69 @@
+--------------------------------------------------------------------------------
+-- frame.exw
+--------------------------------------------------------------------------------
+-- IupFrame Example in Euphoria 
+-- Draws a frame around a button.
+-- Note that "FGCOLOR" is added to the frame but it is inherited by the button.
+--
+--------------------------------------------------------------------------------
+-- Version 3.2.1.1
+-- Dated 2020.01.25
+-- Author C A Newbould
+-- Status: modified from v4.0.5
+--------------------------------------------------------------------------------
+-- includes
+--------------------------------------------------------------------------------
+include gui/iup/iup.ew as IUP
+--------------------------------------------------------------------------------
+-- constants
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- types
+--------------------------------------------------------------------------------
+type Ihandle(object x)
+    return 1
+end type
+--------------------------------------------------------------------------------
+-- routines
+--------------------------------------------------------------------------------
+procedure main(string title)
+    -- IUP identifiers
+    Ihandle  frame 
+    Ihandle  dialog 
+    -- initialise
+    IUP:init("")
+    -- open library 
+    IupOpen()
+    -- Creates frame with a label
+    frame = IupFrame
+          (
+            IupHbox
+            ({
+              IupFill(),
+              IupLabel ("IupFrame Attributes:\n" & 
+                        "FGCOLOR = \"255 0 0\"\n" &
+                        "SIZE = \"EIGHTHxEIGHTH\"\n" &
+                        "TITLE = \"This is the frame\"\n" &
+                        "MARGIN = \"10x10\""),
+              IupFill(),
+              NULL
+            })
+          ) 
+    -- Sets frame's attributes
+    frame = IupSetAttributes(frame, "FGCOLOR=\"255 0 0\","
+                & "SIZE=EIGHTHxEIGHTH, "
+                & "TITLE=\"This is the frame\", MARGIN=10x10") 
+    -- Creates dialog
+    dialog = IupDialog(frame) 
+    -- Sets dialog's title & size so that title shows
+    IupSetAttribute(dialog, "TITLE", title)
+    IupSetAttribute(dialog, "SIZE", "QUARTERxQUARTER")
+    IupShow(dialog)   -- Shows dialog in the center of the screen
+    IupMainLoop()       -- Initializes IUP main loop
+    IupClose()          -- Finishes IUP
+end procedure
+--------------------------------------------------------------------------------
+-- execution
+--------------------------------------------------------------------------------
+main("IupFrame")
+--------------------------------------------------------------------------------

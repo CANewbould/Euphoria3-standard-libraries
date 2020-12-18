@@ -1,0 +1,160 @@
+<!DOCTYPE html 
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+ <title></title>
+ <link rel="stylesheet" media="screen, projection, print" type="text/css" href="style.css"/>
+<!-- source="msgbox.e.cr" -->
+</head>
+<body>
+
+<a name="_0_libraryeuphoriaincludestdwin32msgboxe"></a><a name="libraryeuphoriaincludestdwin32msgboxe"></a><h1>Library: (euphoria)(include)(std)(win32)msgbox.e</h1>
+<p>  Description: Re-allocation of existing Eu3 libraries into standard libraries </p>
+
+<hr />
+
+<p>Version: 3.1.2.0<br />
+Euphoria Versions: 3.1.1<br />
+Author:C A Newbould<br />
+Date: 2017.04.29<br />
+Status: operational; complete<br />
+Changes:<br /> </p>
+<ul><li>created with <tt>message_box</tt> defined
+</li></ul>
+<hr />
+
+<a name="_1_euphoriastandardlibrarymsgbox"></a><a name="euphoriastandardlibrarymsgbox"></a><h2>Euphoria Standard library: msgbox</h2>
+<a name="_2_routines"></a><a name="routines"></a><h3>Routines</h3>
+<p>  The following routines are part of the Eu3.1.1 installation and deliver  exactly the same functionality as those defined in Open Euphoria's standard library of the same name. </p>
+<ul><li><tt>message_box</tt>
+</li></ul>
+<p> Utilise this routine and the associated constants by adding the following  statement to your module: </p>
+
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">std\win32\machine.e</font>
+</pre>
+
+<hr />
+
+<a name="_3_interface"></a><a name="interface"></a><h2>Interface</h2>
+<a name="_4_includes"></a><a name="includes"></a><h3>Includes</h3>
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">std/machine.e	</font><font color="#FF0055">-- for free</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">std/os.e	</font><font color="#FF0055">-- for WIN32</font>
+</pre>
+
+<a name="_5_constants"></a><a name="constants"></a><h3>Constants</h3>
+<p>  Style values for message_box() </p>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_ABORTRETRYIGNORE = #02 </font><font color="#FF0055">--  Abort, Retry, Ignore</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_APPLMODAL = #00       </font><font color="#FF0055">-- User must respond before doing something else</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_DEFAULT_DESKTOP_ONLY = #20000</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_DEFBUTTON1 = #00      </font><font color="#FF0055">-- First button is default button</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_DEFBUTTON2 = #100      </font><font color="#FF0055">-- Second button is default button</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_DEFBUTTON3 = #200      </font><font color="#FF0055">-- Third button is default button</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_DEFBUTTON4 = #300   </font><font color="#FF0055">-- Fourth button is default button</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_HELP = #4000            </font><font color="#FF0055">-- Windows 95: Help button generates help event</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_ICONASTERISK = #40</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_ICONERROR = #10</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_ICONEXCLAMATION = #30 </font><font color="#FF0055">-- Exclamation-point appears in the box</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_ICONHAND = MB_ICONERROR        </font><font color="#FF0055">-- A hand appears</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_ICONINFORMATION = MB_ICONASTERISK	</font><font color="#FF0055">-- Lowercase letter i in a circle appears</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_ICONQUESTION = #20    </font><font color="#FF0055">-- A question-mark icon appears</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_ICONSTOP = MB_ICONHAND</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_ICONWARNING = MB_ICONEXCLAMATION</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_OK = #00              </font><font color="#FF0055">-- Message box contains one push button: OK</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_OKCANCEL = #01        </font><font color="#FF0055">-- Message box contains OK and Cancel</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_RETRYCANCEL = #05     </font><font color="#FF0055">-- Message box contains Retry and Cancel</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_RIGHT = #80000        </font><font color="#FF0055">-- Windows 95: The text is right-justified</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_RTLREADING = #100000   </font><font color="#FF0055">-- Windows 95: For Hebrew and Arabic systems</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_SERVICE_NOTIFICATION = #40000 </font><font color="#FF0055">-- Windows NT: The caller is a service</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_SETFOREGROUND = #10000   </font><font color="#FF0055">-- Message box becomes the foreground window</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_SYSTEMMODAL  = #1000    </font><font color="#FF0055">-- All applications suspended until user responds</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_TASKMODAL = #2000       </font><font color="#FF0055">-- Similar to MB_APPLMODAL</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_YESNO = #04           </font><font color="#FF0055">-- Message box contains Yes and No</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">MB_YESNOCANCEL = #03      </font><font color="#FF0055">-- Message box contains Yes, No, and Cancel</font>
+</pre>
+
+<p>  Values returned by message_box()  (0 means failure) </p>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">IDABORT = 3  </font><font color="#FF0055">-- Abort button was selected.</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">IDCANCEL = 2 </font><font color="#FF0055">-- Cancel button was selected.</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">IDIGNORE = 5 </font><font color="#FF0055">-- Ignore button was selected.</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">IDNO = 7     </font><font color="#FF0055">-- No button was selected.</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">IDOK = 1     </font><font color="#FF0055">-- OK button was selected.</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">IDRETRY = 4  </font><font color="#FF0055">-- Retry button was selected.</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">IDYES = 6    </font><font color="#FF0055">-- Yes button was selected.</font>
+</pre>
+
+<a name="_6_routines"></a><a name="routines"></a><h3>Routines</h3>
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">message_box</font><font color="#880033">(</font><font color="#330033">string text, string title, </font><font color="#00A033">object </font><font color="#330033">style</font><font color="#880033">)	</font><font color="#FF0055">-- displays a window with a title, message, buttons and an icon</font>
+</pre>
+</body></html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html 
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+ <title></title>
+ <link rel="stylesheet" media="screen, projection, print" type="text/css" href="style.css"/>
+<!-- source="os.e.cr" -->
+</head>
+<body>
+
+<a name="_0_libraryeuphoriaincludestdose"></a><a name="libraryeuphoriaincludestdose"></a><h1>Library: (euphoria)(include)(std)os.e</h1>
+<p>  Description: Re-allocation of existing Eu3 libraries into standard libraries </p>
+
+<hr />
+
+<p>Version: 3.1.2.2<br />
+Euphoria Versions: 3.1.1 and later<br />
+Author: C A Newbould<br />
+Date: 2017.08.17<br />
+Status: operational; incomplete<br />
+Changes:<br /> </p>
+<ul><li>defined <tt>sleep</tt>
+</li></ul>
+<hr />
+
+<a name="_1_euphoriastandardlibraryos"></a><a name="euphoriastandardlibraryos"></a><h2>Euphoria Standard library: os</h2>
+<a name="_2_routines"></a><a name="routines"></a><h3>Routines</h3>
+<p>  The following routines are part of the Eu3.1.1 installation and deliver  exactly the same functionality as those defined in Open Euphoria's standard library of the same name. </p>
+<ul><li><tt>instance</tt>
+</li><li><tt>sleep</tt>
+</li></ul>
+<p> Utilise these routines  and the associated constants  by adding the following statement to your module: </p>
+
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">std/os.e</font>
+</pre>
+
+<hr />
+
+<a name="_3_interface"></a><a name="interface"></a><h2>Interface</h2>
+<a name="_4_constants"></a><a name="constants"></a><h3>Constants</h3>
+<a name="_5_osindicators"></a><a name="osindicators"></a><h4>OS indicators</h4>
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">LINUX = 3</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">WIN32 = 2</font>
+</pre>
+
+<a name="_6_routines"></a><a name="routines"></a><h3>Routines</h3>
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">instance</font><font color="#880033">()	</font><font color="#FF0055">-- returns hInstance on Windows and Process ID (pid) on Unix</font>
+</pre>
+
+<p>  In Windows the <tt>hInstance</tt> can be passed around to various Windows routines. </p>
+
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">sleep</font><font color="#880033">(</font><font color="#00A033">atom </font><font color="#330033">t</font><font color="#880033">)	</font><font color="#FF0055">-- go to sleep for t seconds, allowing (on WIN32 and Linux) other processes to run</font>
+</pre>
+</body></html>

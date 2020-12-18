@@ -1,0 +1,76 @@
+<!DOCTYPE html 
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+ <title></title>
+ <link rel="stylesheet" media="screen, projection, print" type="text/css" href="style.css"/>
+<!-- source="convert.e.cr" -->
+</head>
+<body>
+
+<a name="_0_libraryeuphoriaincludestdconverte"></a><a name="libraryeuphoriaincludestdconverte"></a><h1>Library: (euphoria)(include)(std)convert.e</h1>
+<p>  Description: Re-allocation of existing Eu3 libraries into standard libraries </p>
+
+<hr />
+
+<p>Version: 3.1.2.2<br />
+Euphoria Versions: 3.1.1 upwards <br />
+Author: C A Newbould<br />
+Date: 2017.08.17<br />
+Status: operational; incomplete<br />
+Changes:<br /> </p>
+<ul><li>defined <tt>int_to_bits</tt>
+</li><li>defined <tt>int_to_bytes</tt>
+</li></ul>
+<hr />
+
+<a name="_1_euphoriastandardlibraryconvert"></a><a name="euphoriastandardlibraryconvert"></a><h2>Euphoria Standard library: convert</h2>
+<a name="_2_routines"></a><a name="routines"></a><h3>Routines</h3>
+<p>  The following routines are part of the Eu3.1.1 installation and deliver  exactly the same functionality as those defined in Open Euphoria's standard library of the same name. </p>
+<ul><li><tt>atom_to_float32</tt>
+</li><li><tt>atom_to_float64</tt>
+</li><li><tt>bits_to_int</tt>
+</li><li><tt>bytes_to_int</tt>
+</li><li><tt>float32_to_atom</tt>
+</li><li><tt>float64_to_atom</tt>
+</li><li><tt>int_to_bits</tt>
+</li><li><tt>int_to_bytes</tt>
+</li></ul>
+<p> Utilise these routines by adding the following statement to your module: </p>
+
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">std/convert.e</font>
+</pre>
+
+<a name="_3_interface"></a><a name="interface"></a><h2>Interface</h2>
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">std/machine.e	</font><font color="#FF0055">-- for allocate</font>
+</pre>
+
+<a name="_4_routines"></a><a name="routines"></a><h3>Routines</h3>
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">atom_to_float32</font><font color="#880033">(</font><font color="#00A033">atom </font><font color="#330033">a</font><font color="#880033">)	</font><font color="#FF0055">-- converts an atom to a sequence of 4 bytes in IEEE 32-bit format</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">atom_to_float64</font><font color="#880033">(</font><font color="#00A033">atom </font><font color="#330033">a</font><font color="#880033">)	</font><font color="#FF0055">-- converts an atom to a sequence of 8 bytes in IEEE 64-bit format</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">bits_to_int</font><font color="#880033">(</font><font color="#00A033">sequence </font><font color="#330033">bits</font><font color="#880033">)	</font><font color="#FF0055">-- gets the (positive) value of a sequence of "bits"</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">bytes_to_int</font><font color="#880033">(</font><font color="#00A033">sequence </font><font color="#330033">s</font><font color="#880033">)	</font><font color="#FF0055">-- converts 4-byte peek() sequence into an integer value</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">float32_to_atom</font><font color="#880033">(</font><font color="#330033">sequence_4 ieee32</font><font color="#880033">)	</font><font color="#FF0055">-- converts a sequence of 4 bytes in IEEE 32-bit format to an atom</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">float64_to_atom</font><font color="#880033">(</font><font color="#330033">sequence_8 ieee64</font><font color="#880033">)	</font><font color="#FF0055">-- converts a sequence of 8 bytes in IEEE 64-bit format to an atom</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">int_to_bits</font><font color="#880033">(</font><font color="#00A033">atom </font><font color="#330033">x, </font><font color="#00A033">integer </font><font color="#330033">nbits</font><font color="#880033">)	</font><font color="#FF0055">-- extracts the lower bits from an integer</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">int_to_bytes</font><font color="#880033">(</font><font color="#00A033">atom </font><font color="#330033">x</font><font color="#880033">)	</font><font color="#FF0055">-- converts an atom that represents an integer to a sequence of 4 bytes</font>
+</pre>
+</body></html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html 
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+ <title></title>
+ <link rel="stylesheet" media="screen, projection, print" type="text/css" href="style.css"/>
+<!-- source="dll.e.cr" -->
+</head>
+<body>
+
+<a name="_0_libraryeuphoriaincludestddlle"></a><a name="libraryeuphoriaincludestddlle"></a><h1>Library: (euphoria)(include)(std)dll.e</h1>
+<p>  Description: Re-allocation of existing Eu3 libraries into standard libraries </p>
+
+<hr />
+
+<p>Version: 3.1.2.2<br />
+Euphoria Versions: 3.1.1 upwards<br />
+Author: C A Newbould<br />
+Date: 2017.08.17<br />
+Status: created; incomplete<br />
+Changes:<br /> </p>
+<ul><li>defined <tt>open_dll</tt>
+</li><li>defined <tt>NULL</tt>
+</li><li>defined C-type constants
+</li></ul>
+<hr />
+
+<a name="_1_euphoriastandardlibrarydll"></a><a name="euphoriastandardlibrarydll"></a><h2>Euphoria Standard library: dll</h2>
+<a name="_2_routines"></a><a name="routines"></a><h3>Routines</h3>
+<p>  The following routines are part of the Eu3.1.1 installation and deliver  exactly the same functionality as those defined in Open Euphoria's standard library of the same name. </p>
+<ul><li><tt>call_back</tt>
+</li><li><tt>define_c_func</tt>
+</li><li><tt>define_c_proc</tt>
+</li><li><tt>define_c_var</tt>
+</li><li><tt>open_dll</tt>
+</li></ul>
+<p> Utilise these routines by adding the following statement to your module: </p>
+
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">std/dll.e</font>
+</pre>
+
+<a name="_3_interface"></a><a name="interface"></a><h2>Interface</h2>
+<a name="_4_constants"></a><a name="constants"></a><h3>Constants</h3>
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">C_CHAR    = #01000001</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">C_DOUBLE  = #03000008</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">C_FLOAT   = #03000004</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">C_INT     = #01000004</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">C_LONG    = C_INT</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">C_POINTER = #02000004	</font><font color="#FF0055">-- same as C_ULONG</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">C_SHORT   = #01000002</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">C_UCHAR   = #02000001</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">C_UINT    = #02000004</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">C_ULONG   = C_UINT</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">C_USHORT  = #02000002</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">NULL = 0 </font><font color="#FF0055">-- NULL pointer</font>
+</pre>
+
+<a name="_5_routines"></a><a name="routines"></a><h3>Routines</h3>
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">call_back</font><font color="#880033">(</font><font color="#00A033">object </font><font color="#330033">id</font><font color="#880033">)	</font><font color="#FF0055">-- return a 32-bit call-back address for a Euphoria routine</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">define_c_func</font><font color="#880033">(</font><font color="#00A033">object </font><font color="#330033">lib, </font><font color="#00A033">object </font><font color="#330033">routine_name, </font><font color="#00A033">sequence </font><font color="#330033">arg_types, </font><font color="#00A033">atom </font><font color="#330033">return_type</font><font color="#880033">)	</font><font color="#FF0055">-- defines a C function (or machine code routine)</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">define_c_proc</font><font color="#880033">(</font><font color="#00A033">object </font><font color="#330033">lib, </font><font color="#00A033">object </font><font color="#330033">routine_name, </font><font color="#00A033">sequence </font><font color="#330033">arg_types</font><font color="#880033">)	</font><font color="#FF0055">-- defines a C function with VOID return type, or where the return value will always be ignored</font>
+</pre>
+
+<p>  Alternatively, defines a machine-code routine at a given address. </p>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">define_c_var</font><font color="#880033">(</font><font color="#00A033">atom </font><font color="#330033">lib, </font><font color="#00A033">sequence </font><font color="#330033">variable_name</font><font color="#880033">)	</font><font color="#FF0055">-- gets the memory address where a global C variable is stored</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">open_dll</font><font color="#880033">(</font><font color="#00A033">sequence </font><font color="#330033">file_name</font><font color="#880033">)	</font><font color="#FF0055">-- opens a Windows dynamic link library (.dll) file, or a Unix shared library (.so) file</font>
+</pre>
+</body></html>

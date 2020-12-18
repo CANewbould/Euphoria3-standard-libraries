@@ -1,0 +1,85 @@
+<!DOCTYPE html 
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+ <title></title>
+ <link rel="stylesheet" media="screen, projection, print" type="text/css" href="style.css"/>
+<!-- source="io.e.cr" -->
+</head>
+<body>
+
+<a name="_0_libraryeuphoriaincludestdioe"></a><a name="libraryeuphoriaincludestdioe"></a><h1>Library: (euphoria)(include)(std)io.e</h1>
+<p>  Description: Re-allocation of existing Eu3 libraries into standard libraries </p>
+
+<hr />
+
+<p>Version: 3.1.2.4<br />
+Euphoria Versions: 3.1.2 upwards <br />
+Author: C A Newbould<br />
+Date: 2017.08.23<br />
+Status: operational; complete<br />
+Changes:<br /> </p>
+<ul><li>defined <tt>unlock_file</tt>
+</li></ul>
+<hr />
+
+<a name="_1_euphoriastandardlibraryio"></a><a name="euphoriastandardlibraryio"></a><h2>Euphoria Standard library: io</h2>
+<a name="_2_routines"></a><a name="routines"></a><h3>Routines</h3>
+<p>  The following routines are part of the Eu3.1.1 installation and deliver  exactly the same functionality as those defined in Open Euphoria's standard  library of the same name. </p>
+<ul><li><tt>flush</tt>
+</li><li><tt>get_bytes</tt>
+</li><li><tt>lock_file</tt>
+</li><li><tt>seek</tt>
+</li><li><tt>unlock_file</tt>
+</li><li><tt>where</tt>
+</li></ul>
+<p> Utilise these routines by adding the following statement to your module: </p>
+
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">std/io.e</font>
+</pre>
+
+<a name="_3_interface"></a><a name="interface"></a><h2>Interface</h2>
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">get.e	</font><font color="#FF0055">-- for GET_EOF</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">os.e	</font><font color="#FF0055">-- for LINUX</font>
+</pre>
+
+<a name="_4_constants"></a><a name="constants"></a><h3>Constants</h3>
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">LOCK_SHARED = 1</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">LOCK_EXCLUSIVE = 2</font>
+</pre>
+
+<a name="_5_routines"></a><a name="routines"></a><h3>Routines</h3>
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">flush</font><font color="#880033">(</font><font color="#330033">file_number fn</font><font color="#880033">)	</font><font color="#FF0055">-- flushes out the buffer associated with an opened file</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">get_bytes</font><font color="#880033">(</font><font color="#330033">file_number fn, </font><font color="#00A033">integer </font><font color="#330033">n</font><font color="#880033">)	</font><font color="#FF0055">-- returns a sequence of n bytes (maximum) from an open file</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">lock_file</font><font color="#880033">(</font><font color="#330033">file_number fn, lock_type t, byte_range r</font><font color="#880033">)	</font><font color="#FF0055">-- attempts to lock a file so other processes won't interfere with it.</font>
+</pre>
+
+<p>  When multiple processes can simultaneously access a file, some kind of  locking mechanism may be needed to avoid mangling the contents of the file,  or causing erroneous data to be read from the file.</p>
+
+<p>  The byte range can be {} if you want to lock the whole file. </p>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">seek</font><font color="#880033">(</font><font color="#330033">file_number fn, file_position pos</font><font color="#880033">) </font><font color="#FF0055">-- move to any byte position in an already-opened file</font>
+</pre>
+
+<p>  This function is normally used with files opened in binary mode. </p>
+
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">unlock_file</font><font color="#880033">(</font><font color="#330033">file_number fn, byte_range r</font><font color="#880033">)  </font><font color="#FF0055">-- unlocks (a portion of) an open file</font>
+</pre>
+
+<p>  the byte range can be {} if you want to unlock the whole file </p>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">where</font><font color="#880033">(</font><font color="#330033">file_number fn</font><font color="#880033">)   </font><font color="#FF0055">-- retrieves the current file position for an opened file or device</font>
+</pre>
+</body></html>

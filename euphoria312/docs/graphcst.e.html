@@ -1,0 +1,77 @@
+<!DOCTYPE html 
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+ <title></title>
+ <link rel="stylesheet" media="screen, projection, print" type="text/css" href="style.css"/>
+<!-- source="graphcst.e.cr" -->
+</head>
+<body>
+
+<a name="_0_libraryeuphoriaincludestdgraphcste"></a><a name="libraryeuphoriaincludestdgraphcste"></a><h1>Library: (euphoria)(include)(std)graphcst.e</h1>
+<p>  Description: Re-allocation of existing Eu3 libraries into standard libraries </p>
+
+<hr />
+
+<p>Version:3.1.2.1<br />
+Euphoria Versions: 3.1.1 upwards<br />
+Author: C A Newbould<br />
+Date: 2017.08.31<br />
+Status: operational; complete<br />
+Changes:<br /> </p>
+<ul><li>defined <tt>video_config</tt>
+</li><li>defined COLOUR_CONSTANTS
+</li><li>updated comment
+</li></ul>
+<hr />
+
+<a name="_1_euphoriastandardlibrarygraphcst"></a><a name="euphoriastandardlibrarygraphcst"></a><h2>Euphoria Standard library: graphcst</h2>
+<a name="_2_routines"></a><a name="routines"></a><h3>Routines</h3><ul><li><tt>video_config</tt>
+</li></ul>
+<p> The routines and constants defined in this module are part of the Eu3.1.1  installation and  deliver exactly the same functionality as those defined in Open Euphoria's  standard library of the same name.</p>
+
+<p>  Utilise them by adding the following statement to your module: </p>
+
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">std/graphcst.e</font>
+</pre>
+
+<a name="_3_interface"></a><a name="interface"></a><h2>Interface</h2>
+<a name="_4_constants"></a><a name="constants"></a><h3>Constants</h3>
+<p>  video_config sequence accessors </p>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">VC_COLOR = 1</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">VC_COLUMNS = 4</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">VC_LINES = 3</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">VC_MODE  = 2</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">VC_NCOLORS = 7</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">VC_PAGES = 8</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">VC_XPIXELS = 5</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">VC_YPIXELS = 6</font>
+</pre>
+
+<a name="_5_routines"></a><a name="routines"></a><h3>Routines</h3>
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">video_config</font><font color="#880033">()  </font><font color="#FF0055">-- returns sequence of information on video configuration</font>
+</pre>
+
+<p>  The format is:</p>
+
+<p>  {color?, mode, text lines, text columns, xpixels, ypixels, #colors, pages}</p>
+</body></html>

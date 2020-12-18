@@ -1,0 +1,66 @@
+<!DOCTYPE html 
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+ <title></title>
+ <link rel="stylesheet" media="screen, projection, print" type="text/css" href="style.css"/>
+<!-- source="graphics.e.cr" -->
+</head>
+<body>
+
+<a name="_0_libraryeuphoriaincludestdgraphicse"></a><a name="libraryeuphoriaincludestdgraphicse"></a><h1>Library: (euphoria)(include)(std)graphics.e</h1>
+<p>  Description: Re-allocation of existing Eu3 libraries into standard libraries </p>
+
+<hr />
+
+<p>Version: 3.1.2.4<br />
+Euphoria Versions: 3.1.1 upwards <br />
+Author: C A Newbould<br />
+Date: 2017.08.31<br />
+Status: operational; complete<br />
+Changes:<br /> </p>
+<ul><li>defined <tt>wrap</tt>
+</li></ul>
+<hr />
+
+<a name="_1_euphoriastandardlibrarygraphics"></a><a name="euphoriastandardlibrarygraphics"></a><h2>Euphoria Standard library: graphics</h2>
+<a name="_2_routines"></a><a name="routines"></a><h3>Routines</h3>
+<p>  The following routines are part of the Eu3.1.1 installation and deliver  exactly the same functionality as those defined in Open Euphoria's standard library of the same name. </p>
+<ul><li><tt>bk_color</tt>
+</li><li><tt>get_position</tt>
+</li><li><tt>scroll</tt>
+</li><li><tt>text_color</tt>
+</li><li><tt>wrap</tt>
+</li></ul>
+<p> Utilise these routines by adding the following statement to your module: </p>
+
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">std/graphics.e</font>
+</pre>
+
+<a name="_3_interface"></a><a name="interface"></a><h2>Interface</h2>
+<a name="_4_routines"></a><a name="routines"></a><h3>Routines</h3>
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">bk_color</font><font color="#880033">(</font><font color="#330033">color c</font><font color="#880033">)	</font><font color="#FF0055">-- sets the background color to c - text or graphics modes</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">get_position</font><font color="#880033">()	</font><font color="#FF0055">-- returns {line, column} of current cursor position</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">scroll</font><font color="#880033">(</font><font color="#00A033">integer </font><font color="#330033">amount, positive_int top_line, positive_int bottom_line</font><font color="#880033">)	</font><font color="#FF0055">-- scrolls a region of text on the screen</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">text_color</font><font color="#880033">(</font><font color="#330033">color c</font><font color="#880033">)	</font><font color="#FF0055">-- sets the foreground text color to c - text or graphics modes</font>
+</pre>
+
+<p>  Add 16 to get blinking. </p>
+
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">wrap</font><font color="#880033">(</font><font color="#330033">boolean on</font><font color="#880033">)   </font><font color="#FF0055">-- determines whether text will wrap when hitting the rightmost column</font>
+</pre>
+
+<p>  on = 1: characters will wrap at end of long line</p>
+
+<p>  on = 0: lines will be truncated</p>
+</body></html>

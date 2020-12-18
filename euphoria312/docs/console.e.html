@@ -1,0 +1,225 @@
+<!DOCTYPE html 
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+ <title></title>
+ <link rel="stylesheet" media="screen, projection, print" type="text/css" href="style.css"/>
+<!-- source="console.e.cr" -->
+</head>
+<body>
+
+<a name="_0_libraryeuphoriaincludestdconsolee"></a><a name="libraryeuphoriaincludestdconsolee"></a><h1>Library: (euphoria)(include)(std)console.e</h1>
+<p>  Description: Re-allocation of existing Eu3 libraries into standard libraries </p>
+
+<hr />
+
+<p>Version: 3.1.2.9<br />
+Euphoria Versions: 3.1.2 upwards<br />
+Author: C A Newbould<br />
+Date: 2017.11.13<br />
+Status: operational; complete<br />
+Changes:<br /> </p>
+<ul><li>extended documentation of <tt>cursor</tt>
+</li><li>extended documentation of <tt>free_console</tt>
+</li><li>extended documentation of <tt>get_screen_char</tt>
+</li></ul>
+<hr />
+
+<a name="_1_euphoriastandardlibraryconsole"></a><a name="euphoriastandardlibraryconsole"></a><h2>Euphoria Standard library: console</h2>
+<a name="_2_routines"></a><a name="routines"></a><h3>Routines</h3>
+<p>  The following routines are part of the Eu3.1.1 installation and deliver  exactly the same functionality as those defined in Open Euphoria's standard library of the same name. </p>
+<ul><li><tt>allow_break</tt>
+</li><li><tt>check_break</tt>
+</li><li><tt>cursor</tt>
+</li><li><tt>free_console</tt>
+</li><li><tt>get_screen_char</tt>
+</li><li><tt>prompt_number</tt>
+</li><li><tt>prompt_string</tt>
+</li><li><tt>put_screen_char</tt>
+</li><li><tt>save_text_image</tt>
+</li><li><tt>wait_key</tt>
+</li></ul>
+<p> Utilise these routines by adding the following statement to your module: </p>
+
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">std/console.e</font>
+</pre>
+
+<a name="_3_interface"></a><a name="interface"></a><h2>Interface</h2>
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">get.e </font><font color="#0000FF">as </font><font color="#330033">stdget </font><font color="#FF0055">-- for value</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">std/graphcst.e	</font><font color="#FF0055">-- for VC_COLUMNS, VC_LINES</font>
+</pre>
+
+<a name="_4_constants"></a><a name="constants"></a><h3>Constants</h3>
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">NO_CURSOR = #2000</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">UNDERLINE_CURSOR = #0607</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">THICK_UNDERLINE_CURSOR = #0507</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">HALF_BLOCK_CURSOR = #0407</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">BLOCK_CURSOR = #0007</font>
+</pre>
+
+<a name="_5_routines"></a><a name="routines"></a><h3>Routines</h3>
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">allow_break</font><font color="#880033">(</font><font color="#330033">boolean b</font><font color="#880033">)	</font><font color="#FF0055">-- sets behaviour of control-c/control-break</font>
+</pre>
+
+<p>  Parameter:    </p>
+<ol><li><tt>b</tt>: TRUE (!= 0) to enable the trapping of Control+C and Control+Break, or FALSE (0) to disable it.
+</li></ol>
+<p> Notes:</p>
+
+<p>  If <tt>b</tt> is TRUE then allow Control+C/Control+Break to  terminate the program. If b is FALSE then don't allow it.</p>
+
+<p>  When b is 1 (true), Control+C and Control+Break can terminate your program  when it tries to read input from the keyboard.  When b is 0 (false) your program will not be terminated by Control+C  or Control+Break.</p>
+
+<p>  Initially your program can be terminated at any point where it tries to read  from the keyboard.</p>
+
+<p>  You can find out if the user has pressed Control+C or Control+Break by  calling <tt>check_break</tt>. </p>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">check_break</font><font color="#880033">()	</font><font color="#FF0055">-- returns the number of times that control-c or control-break was pressed since the last time check_break() was called</font>
+</pre>
+
+<p>  This is useful after you have called <tt>allow_break</tt>(0) which prevents control-c  or control-break from terminating your program.  You can use <tt>check_break</tt>() to find out if the user has pressed one of these keys.  You might then perform some action such as a graceful shutdown of your program.</p>
+
+<p>  Neither control-c or control-break will be returned as input characters when you  read the keyboard.  You can only detect them by calling <tt>check_break</tt>(). </p>
+
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">cursor</font><font color="#880033">(</font><font color="#00A033">integer </font><font color="#330033">style</font><font color="#880033">)	</font><font color="#FF0055">-- choose a cursor style</font>
+</pre>
+
+<p>  Parameter:  		</p>
+<ol><li><tt>style</tt>: an integer defining the cursor shape.
+</li></ol>
+<p> Platform: 		Not <strong>Unix</strong>.</p>
+
+<p>  Notes:</p>
+
+<p>    In pixel-graphics modes no cursor is displayed. </p>
+
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">display_text_image</font><font color="#880033">(</font><font color="#330033">text_point xy, </font><font color="#00A033">sequence </font><font color="#330033">text</font><font color="#880033">)	</font><font color="#FF0055">-- displays a text image at line xy[1], column xy[2] in any text mode</font>
+</pre>
+
+<p>  N.B. coordinates are {line, column} with {1,1} at the top left of screen.</p>
+
+<p>  Displays to the active text page. </p>
+
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">free_console</font><font color="#880033">()	</font><font color="#FF0055">-- deletes the console text-window (if one currently exists)</font>
+</pre>
+
+<p>  Notes:</p>
+
+<p>  Call this if you are getting an unwanted "Press Enter" message  at the end of execution of your program on Linux/FreeBSD or Windows.</p>
+
+<p>   Euphoria will create a console text window for your program the first time that your   program prints something to the screen, reads something from the keyboard, or in some   way needs a console. On WINDOWS this window will automatically disappear when your program   terminates, but you can call <tt>free_console</tt> to make it disappear sooner. On Linux or FreeBSD,   the text mode console is always there, but an xterm window will disappear after Euphoria   issues a "Press Enter" prompt at the end of execution.</p>
+
+<p>   On Unix-style systems, <tt>free_console#</tt> will set the terminal parameters back to normal,   undoing the effect that curses has on the screen.</p>
+
+<p>   In an xterm window, a call to <tt>free_console</tt>, without any further   printing to the screen or reading from the keyboard, will eliminate the   "Press Enter" prompt that Euphoria normally issues at the end of execution.</p>
+
+<p>   After freeing the console window, you can create a new console window by printing   something to the screen, or simply calling <tt>clear_screen</tt>, <tt>position</tt> or any other   routine that needs a console.</p>
+
+<p>   When you use the trace facility, or when your program has an error, Euphoria will   automatically create a console window to display trace information, error messages etc.</p>
+
+<p>   There's a WINDOWS API routine, <a href="FreeConsole.html">free console</a>() that does something similar to   <tt>free_console</tt>. You should use <tt>free_console</tt> instead, because it lets the interpreter know   that there is no longer a console to write to or read from. </p>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">get_screen_char</font><font color="#880033">(</font><font color="#330033">positive_atom line, positive_atom column</font><font color="#880033">)	</font><font color="#FF0055">-- getg the value and attribute of the character at a given screen location</font>
+</pre>
+
+<p>  Parameters:  		</p>
+<ol><li><tt>line</tt>: the 1-base line number of the location
+</li><li><tt>column</tt>: the 1-base column number of the location
+</li></ol>
+<p> Returns:</p>
+
+<p>  a <strong>sequence</strong> of <em>two</em> elements, <tt>{character, attribute_code}</tt>  for the specified location.</p>
+
+<p>  Notes:</p>
+<ul><li>This function inspects a single character on the <em>active page</em>.
+</li><li>The attribute_code is an atom that contains the foreground and background color of the character, and possibly other operating-system dependant information describing the appearance of the character on the screen.
+</li><li>The fg_color and bg_color are integers in the range 0 to 15, which correspond to...
+</li></ul><table><tr><th> color number </th>
+<th> name </th>
+</tr>
+<tr><td>       0       </td>
+<td> black      </td>
+</tr>
+<tr><td>       1       </td>
+<td> dark blue      </td>
+</tr>
+<tr><td>       2       </td>
+<td> green      </td>
+</tr>
+<tr><td>       3       </td>
+<td> cyan      </td>
+</tr>
+<tr><td>       4       </td>
+<td> crimson      </td>
+</tr>
+<tr><td>       5       </td>
+<td> purple      </td>
+</tr>
+<tr><td>       6       </td>
+<td> brown      </td>
+</tr>
+<tr><td>       7       </td>
+<td> light gray      </td>
+</tr>
+<tr><td>       8       </td>
+<td> dark gray      </td>
+</tr>
+<tr><td>       9       </td>
+<td> blue      </td>
+</tr>
+<tr><td>       10      </td>
+<td> bright green      </td>
+</tr>
+<tr><td>       11      </td>
+<td> light blue      </td>
+</tr>
+<tr><td>       12      </td>
+<td> red      </td>
+</tr>
+<tr><td>       13      </td>
+<td> magenta      </td>
+</tr>
+<tr><td>       14      </td>
+<td> yellow      </td>
+</tr>
+<tr><td>       15      </td>
+<td> white      </td>
+</tr>
+</table>
+<ul><li>With <tt>get_screen_char</tt> and <tt>put_screen_char</tt> you can save and restore a character on the screen along with its attribute_code.
+</li></ul>
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">prompt_number</font><font color="#880033">(</font><font color="#00A033">sequence </font><font color="#330033">prompt, </font><font color="#00A033">sequence </font><font color="#330033">range</font><font color="#880033">)	</font><font color="#FF0055">-- prompts the user to enter a number</font>
+</pre>
+
+<p>  A range of allowed values may be specified, as a <tt>sequence</tt> giving a  numeric range </p>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">prompt_string</font><font color="#880033">(</font><font color="#330033">string prompt</font><font color="#880033">)	</font><font color="#FF0055">-- prompts the user to enter a string of text</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">put_screen_char</font><font color="#880033">(</font><font color="#330033">positive_atom line, positive_atom column, </font><font color="#00A033">sequence </font><font color="#330033">char_attr</font><font color="#880033">)	</font><font color="#FF0055">-- stores {character, attributes, character, attributes, ...}</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">save_text_image</font><font color="#880033">(</font><font color="#330033">text_point top_left, text_point bottom_right</font><font color="#880033">)	</font><font color="#FF0055">-- copies a rectangular block of text out of screen memory</font>
+</pre>
+
+<p>  Copies, given the coordinates of the top-left and bottom-right corners.</p>
+
+<p>  Reads from the active text page. </p>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">wait_key</font><font color="#880033">()  </font><font color="#FF0055">-- gets the next key pressed by the user; wait until a key is pressed</font>
+</pre>
+</body></html>

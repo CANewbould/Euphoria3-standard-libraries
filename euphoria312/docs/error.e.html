@@ -1,0 +1,54 @@
+<!DOCTYPE html 
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+ <title></title>
+ <link rel="stylesheet" media="screen, projection, print" type="text/css" href="style.css"/>
+<!-- source="error.e.cr" -->
+</head>
+<body>
+
+<a name="_0_libraryeuphoriaincludestderrore"></a><a name="libraryeuphoriaincludestderrore"></a><h1>Library: (euphoria)(include)(std)error.e</h1>
+<p>  Description: Re-allocation of existing Eu3 libraries into standard libraries </p>
+
+<hr />
+
+<p>Version: 3.1.2.0<br />
+Euphoria Versions: 3.1.1 upwards<br />
+Author: C A Newbould<br />
+Date: 2017.08.11<br />
+Status: created; incomplete<br />
+Changes:<br /> </p>
+<ul><li>defined <tt>crash_file</tt>
+</li><li>defined <tt>crash_message</tt>
+</li><li>defined <tt>crash_routine</tt>
+</li></ul>
+<hr />
+
+<a name="_1_euphoriastandardlibraryerror"></a><a name="euphoriastandardlibraryerror"></a><h2>Euphoria Standard library: error</h2>
+<a name="_2_routines"></a><a name="routines"></a><h3>Routines</h3>
+<p>  The following routines are part of the Eu3.1.1 installation and deliver  exactly the same functionality as those defined in Open Euphoria's standard library of the same name. </p>
+<ul><li><tt>crash_file</tt>
+</li><li><tt>crash_message</tt>
+</li><li><tt>crash_routine</tt>
+</li></ul>
+<p> Utilise these routines by adding the following statement to your module: </p>
+
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">std/error.e</font>
+</pre>
+
+<a name="_3_interface"></a><a name="interface"></a><h2>Interface</h2>
+<a name="_4_routines"></a><a name="routines"></a><h3>Routines</h3>
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">crash_file</font><font color="#880033">(</font><font color="#00A033">sequence </font><font color="#330033">file_path</font><font color="#880033">)	</font><font color="#FF0055">-- specifies an alternative file path name for any diagnostic information to be written</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">crash_message</font><font color="#880033">(</font><font color="#00A033">sequence </font><font color="#330033">msg</font><font color="#880033">)	</font><font color="#FF0055">-- specifies a final message to display for your user, if Euphoria has to shut down the current program due to an error</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">crash_routine</font><font color="#880033">(</font><font color="#00A033">integer </font><font color="#330033">proc</font><font color="#880033">)	</font><font color="#FF0055">-- specifies the routine id of a 1-parameter Euphoria function to call in the event that Euphoria must shut down the current program due to an error</font>
+</pre>
+</body></html>

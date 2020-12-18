@@ -1,0 +1,103 @@
+<!DOCTYPE html 
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+ <title></title>
+ <link rel="stylesheet" media="screen, projection, print" type="text/css" href="style.css"/>
+<!-- source="filesys.e.cr" -->
+</head>
+<body>
+
+<a name="_0_libraryeuphoriaincludestdfilesyse"></a><a name="libraryeuphoriaincludestdfilesyse"></a><h1>Library: (euphoria)(include)(std)filesys.e</h1>
+<p>  Description: Re-allocation of existing Eu3 libraries into standard libraries </p>
+
+<hr />
+
+<p>Version: 3.1.2.2<br />
+Euphoria Versions: 3.1.2 upwards<br />
+Author: C A Newbould<br />
+Date: 2017.08.23<br />
+Status: operational; complete<br />
+Changes:<br /> </p>
+<ul><li>defined <tt>walk_dir</tt>
+</li><li>added constants for <tt>dir</tt>
+</li></ul>
+<hr />
+
+<a name="_1_euphoriastandardlibraryfilesys"></a><a name="euphoriastandardlibraryfilesys"></a><h2>Euphoria Standard library: filesys</h2>
+<a name="_2_routines"></a><a name="routines"></a><h3>Routines</h3>
+<p>  The following routines are part of the Eu3.1.1 installation and deliver  exactly the same functionality as those defined in Open Euphoria's standard library of the same name. </p>
+<ul><li><tt>chdir</tt>
+</li><li><tt>current_dir</tt>
+</li><li><tt>dir</tt>
+</li><li><tt>lock_file</tt>
+</li><li><tt>walk_dir</tt>
+</li></ul>
+<p> Utilise these routines by adding the following statement to your module: </p>
+
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">std/filesys.e</font>
+</pre>
+
+<a name="_3_interface"></a><a name="interface"></a><h2>Interface</h2>
+<a name="_4_includes"></a><a name="includes"></a><h3>Includes</h3>
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">sort.e  </font><font color="#FF0055">-- for sort</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">os.e    </font><font color="#FF0055">-- for LINUX</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">D_NAME = 1</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">D_ATTRIBUTES = 2</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">D_SIZE = 3</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">D_YEAR = 4</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">D_MONTH = 5</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">D_DAY = 6</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">D_HOUR = 7</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">D_MINUTE = 8</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">D_SECOND = 9</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global constant </font><font color="#330033">W_BAD_PATH = -1 </font><font color="#FF0055">-- error code</font>
+</pre>
+
+<a name="_5_variables"></a><a name="variables"></a><h3>Variables</h3>
+<pre class="examplecode"><font color="#0000FF">global </font><font color="#00A033">integer </font><font color="#330033">my_dir my_dir = DEFAULT  </font><font color="#FF0055">-- it's better not to use routine_id() here, or else users will have to bind with clear routine names</font>
+</pre>
+
+<a name="_6_routines"></a><a name="routines"></a><h3>Routines</h3>
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">chdir</font><font color="#880033">(</font><font color="#00A033">sequence </font><font color="#330033">newdir</font><font color="#880033">)	</font><font color="#FF0055">-- changes the current directory. Returns 1 - success, 0 - fail</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">current_dir</font><font color="#880033">()	</font><font color="#FF0055">-- returns name of the current working directory</font>
+</pre>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">dir</font><font color="#880033">(</font><font color="#00A033">sequence </font><font color="#330033">name</font><font color="#880033">)	</font><font color="#FF0055">-- returns directory information, given the name of a file or directory.</font>
+</pre>
+
+<p>  The format returned is:  {   {"name1", attributes, size, year, month, day, hour, minute, second},   {"name2", ...                                                     },  } </p>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">walk_dir</font><font color="#880033">(</font><font color="#00A033">sequence </font><font color="#330033">path_name, </font><font color="#00A033">integer </font><font color="#330033">your_function, </font><font color="#00A033">integer </font><font color="#330033">scan_subdirs</font><font color="#880033">)   </font><font color="#FF0055">-- Generalized Directory Walker</font>
+</pre>
+
+<p>  Walk through a directory and (optionally) its subdirectories,  "visiting" each file and subdirectory. Your function will be called  via its routine id. The visits will occur in alphabetical order.  Your function should accept the path name and dir() entry for  each file and subdirectory. It should return 0 to keep going,  or an error code (greater than 0) to quit, or it can return  any sequence or atom other than 0 as a useful diagnostic value.</p>
+</body></html>

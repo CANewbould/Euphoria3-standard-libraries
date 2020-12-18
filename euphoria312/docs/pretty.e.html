@@ -1,0 +1,70 @@
+<!DOCTYPE html 
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+ <title></title>
+ <link rel="stylesheet" media="screen, projection, print" type="text/css" href="style.css"/>
+<!-- source="pretty.e.cr" -->
+</head>
+<body>
+
+<a name="_0_librarystdprettye"></a><a name="librarystdprettye"></a><h1>Library: (std)pretty.e</h1>
+<p>  Description: Eu3 proxy for OE4's standard library </p>
+
+<hr />
+
+<p>Version: 3.1.2.1<br />
+Euphoria Versions: 3.1.1<br />
+Author: C A Newbould<br />
+Date: 2018.04.10<br />
+Status: operational; complete <br />
+Changes:<br /> </p>
+<ul><li>documented <tt>pretty_print</tt>
+</li></ul>
+<hr />
+
+<a name="_1_prettyprinting"></a><a name="prettyprinting"></a><h2>Pretty Printing</h2>
+<p>  Routines already defined: </p>
+<ul><li><tt>pretty_print</tt>
+</li></ul>
+<hr />
+
+<a name="_2_interface"></a><a name="interface"></a><h2>Interface</h2>
+<a name="_3_includes"></a><a name="includes"></a><h3>Includes</h3>
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">os.e	</font><font color="#FF0055">-- for LINUX</font>
+</pre>
+
+<a name="_4_routines"></a><a name="routines"></a><h3>Routines</h3>
+<pre class="examplecode"><font color="#0000FF">global procedure </font><font color="#330033">pretty_print</font><font color="#880033">(</font><font color="#00A033">integer </font><font color="#330033">fn, </font><font color="#00A033">object </font><font color="#330033">x, </font><font color="#00A033">sequence </font><font color="#330033">options</font><font color="#880033">)   </font><font color="#FF0055">-- prints an object to a file or device, using braces { , , , }, indentation, and multiple lines to show the structure</font>
+</pre>
+
+<p>  Parameters: </p>
+<ol><li><tt>fn</tt>: a handle to a device or file
+</li><li><tt>x</tt>: the object to be displayed
+</li><li><tt>options</tt>: the controlling options
+</li></ol>
+<p> Several options may be supplied in s to control the presentation.  Pass {} to select the defaults, or set options as below: </p>
+<ol><li>display ASCII characters:<ul><li>0: never
+</li><li>1: alongside any integers in the printable ASCII range 32..127 (default)
+</li><li>2: like 1, plus display as "string" when all integers of a sequence are in the printable ASCII range
+</li><li>3: like 2, but show *only* quoted characters, not numbers, for any integers in the printable ASCII range, as well as the whitespace characters: \t \r \n
+</li></ul>
+</li><li>amount to indent for each level of sequence nesting - default: 2
+</li><li>column we are starting at - default: 1
+</li><li>approximate column to wrap at - default: 78
+</li><li>format to use for integers - default: "%d"
+</li><li>format to use for floating-point numbers - default: "%.10g"
+</li><li>minimum value for printable ASCII - default 32
+</li><li>maximum value for printable ASCII - default 127
+</li><li>maximum number of lines to output
+</li></ol>
+<p> If the length of <tt>options</tt> is less than 8, unspecified options at the  end of the  sequence will keep the default values. e.g. {0, 5} will choose  "never display ASCII", plus 5-character indentation, with defaults  for everything else.</p>
+
+<p>  Notes:</p>
+
+<p>  The display will start at the current cursor position.  Normally you will want to call <tt>pretty_print</tt> when the cursor is in  column 1 (after printing a \n character).  If you want to start in a different column, you should call <tt>position</tt>  and specify a value for option [3].  This will ensure that the first and last braces in a sequence line up vertically.  When specifying the format to use for integers and floating-point numbers,  you can add some decoration, e.g. "(%d)" or "$ %.2f"</p>
+</body></html>

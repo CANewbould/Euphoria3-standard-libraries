@@ -9,14 +9,15 @@
 --= Program: (euphoria)(demos)(std)datetime.ex
 -- Description: test program for Eu3's datetime routines
 ------
---[[[Version: 3.2.1.2
+--[[[Version: 3.2.1.3
 --Euphoria Versions: 3.1.1 upwards 
 --Author: C A Newbould
---Date: 2020.12.18
+--Date: 2021.01.01
 --Status: operational
 --Changes:]]]
---* added test of ##years_day##
---* added test of ##add##
+--* defined internal card function
+--* changed 2004 to 2020
+--* added test of ##diff##
 --
 --==Testing datetime routines
 --
@@ -33,7 +34,6 @@
 --*/
 --------------------------------------------------------------------------------
 include std/datetime.e   -- for all routines & constants
---include ../../include/std/datetime.e   -- for all routines & constants
 --------------------------------------------------------------------------------
 --
 --=== Constants
@@ -74,6 +74,13 @@ constant SCREEN = 1
 --------------------------------------------------------------------------------
 --	Local
 --------------------------------------------------------------------------------
+function card(integer i)
+    if i = 1 then return "st"
+    elsif i = 2 then return "nd"
+    elsif i = 3 then return "rd"
+    else return "th"
+    end if
+end function
 --------------------------------------------------------------------------------
 --	Shared with other modules
 --------------------------------------------------------------------------------
@@ -85,27 +92,30 @@ constant SCREEN = 1
 --*/
 --------------------------------------------------------------------------------
 procedure main()
-    datetime Y2004
+    datetime Y2020
     datetime NextWeek
-	datetime Now
+    datetime Now
+    integer days
 	Now = now()
 	puts(SCREEN, repeat('-', length(LIB) + 16) & EOL)
     puts(SCREEN, "*** Testing " & LIB & " ***" & EOL)
     puts(SCREEN, repeat('-', length(LIB) + 16) & EOL)
     puts(SCREEN, "--- 'now()' ---" & EOL)
     puts(SCREEN, "The date now is: ")
-    printf(SCREEN, "%02d-%02d-%4d; time %02d:%02d:%02d\n",
+    printf(SCREEN, "%02d-%02d-%4d; time %02d:%02d:%02d" & EOL,
 				{Now[3], Now[2], Now[1], Now[4], Now[5], Now[6]})
-	puts(SCREEN, "--- default 'format()' ---" & EOL)
-	puts(SCREEN, format(Now, "") & EOL)			
-    printf(SCREEN, "It is the %dth day of the year" & EOL, {years_day(Now)})
+	puts(SCREEN, "--- default 'format()' ---")
+    puts(SCREEN, format(Now, "") & EOL)
+    days = years_day(Now)			
+    printf(SCREEN, "It is the %d%s day of the year" & EOL, {days, card(days)})
     puts(SCREEN, "In a week's time it will be: ")
     NextWeek = add(Now, 7, DAYS)
     printf(SCREEN, "%02d-%02d-%4d" & EOL, {NextWeek[3], NextWeek[2], NextWeek[1]})           
+    printf(SCREEN, "In that time %d minutes will have elapsed" & EOL, {diff(Now, NextWeek)/60})
     puts(SCREEN, "--- 'days_in_month()' ---" & EOL)
-    Y2004 = {2004, 2, 12, 00, 00, 00}
+    Y2020 = {2020, 2, 12, 00, 00, 00}
     printf(SCREEN, "In %d there were %d days in Feb and %d overall",
-                {Y2004[1], days_in_month(Y2004), days_in_year(Y2004)})
+                {Y2020[1], days_in_month(Y2020), days_in_year(Y2020)})
 	puts(SCREEN, EOL & repeat('-', length(CLOSURE)))
     puts(SCREEN, CLOSURE)
     if getc(0) then end if
@@ -116,6 +126,15 @@ end procedure
 main()
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.2
+--Euphoria Versions: 3.1.1 upwards 
+--Author: C A Newbould
+--Date: 2020.12.18
+--Status: operational
+--Changes:]]]
+--* added test of ##years_day##
+--* added test of ##add##
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.1
 --Euphoria Versions: 3.1.1 upwards 

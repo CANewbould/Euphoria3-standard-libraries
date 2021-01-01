@@ -9,15 +9,13 @@
 --= Program: (euphoria)(demos)(std)datetime.ex
 -- Description: test program for Eu3's datetime routines
 ------
---[[[Version: 3.2.1.3
+--[[[Version: 3.2.1.4
 --Euphoria Versions: 3.1.1 upwards 
 --Author: C A Newbould
 --Date: 2021.01.01
 --Status: operational
 --Changes:]]]
---* defined internal card function
---* changed 2004 to 2020
---* added test of ##diff##
+--* dealt with 'eui' vs 'euiw'
 --
 --==Testing datetime routines
 --
@@ -92,10 +90,11 @@ end function
 --*/
 --------------------------------------------------------------------------------
 procedure main()
-    datetime Y2020
+    sequence cmdline
+    integer days
     datetime NextWeek
     datetime Now
-    integer days
+    datetime Y2020
 	Now = now()
 	puts(SCREEN, repeat('-', length(LIB) + 16) & EOL)
     puts(SCREEN, "*** Testing " & LIB & " ***" & EOL)
@@ -114,11 +113,14 @@ procedure main()
     printf(SCREEN, "In that time %d minutes will have elapsed" & EOL, {diff(Now, NextWeek)/60})
     puts(SCREEN, "--- 'days_in_month()' ---" & EOL)
     Y2020 = {2020, 2, 12, 00, 00, 00}
-    printf(SCREEN, "In %d there were %d days in Feb and %d overall",
+    printf(SCREEN, "In %d there were %d days in Feb and %d overall" & EOL,
                 {Y2020[1], days_in_month(Y2020), days_in_year(Y2020)})
-	puts(SCREEN, EOL & repeat('-', length(CLOSURE)))
-    puts(SCREEN, CLOSURE)
-    if getc(0) then end if
+    cmdline = command_line()
+    if equal(cmdline[1], "euiw") then
+        puts(SCREEN, EOL & repeat('-', length(CLOSURE)))
+        puts(SCREEN, CLOSURE)
+        if getc(0) then end if
+    end if
 end procedure
 --------------------------------------------------------------------------------
 -- Main
@@ -126,6 +128,16 @@ end procedure
 main()
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.3
+--Euphoria Versions: 3.1.1 upwards 
+--Author: C A Newbould
+--Date: 2021.01.01
+--Status: operational
+--Changes:]]]
+--* defined internal card function
+--* changed 2004 to 2020
+--* added test of ##diff##
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.2
 --Euphoria Versions: 3.1.1 upwards 

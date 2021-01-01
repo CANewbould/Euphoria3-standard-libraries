@@ -9,29 +9,31 @@
 -- Description: Re-writing (where necessary) of existing OE4 standard libraries
 -- for use with Eu3
 ------
---[[[Version: 3.2.1.2
+--[[[Version: 3.2.1.3
 --Euphoria Versions: 3.1.1 and later
 --Author: C A Newbould
---Date: 2018.02.24
+--Date: 2021.01.01
 --Status: operational; incomplete
 --Changes:]]]
---* added more OS contants
+--* ##get_pid## defined
+--* coverted to standard highlighting convention
 --
 ------
 --==Euphoria Standard library: os
 -- Operating system helpers.
 --===Constants
---* ##FREEBSD##
---* ##LINUX##
---* ##NETBSD##
---* ##OPENBSD##
---* ##OSX##
---* ##WINDOWS##
---* ##WIN32##
+--* //FREEBSD//
+--* //LINUX//
+--* //NETBSD//
+--* //OPENBSD//
+--* //OSX//
+--* //WINDOWS//
+--* //WIN32//
 --
 --===Routines
 -- The following routines are part of the Open Euphoria's standard
 -- library and have been tested/amended to function with Eu3.1.1.
+--* ##get_pid##
 --* ##instance##
 --* ##sleep##
 --
@@ -57,7 +59,10 @@
 --------------------------------------------------------------------------------
 --	Local
 --------------------------------------------------------------------------------
+constant C_DWORD = #02000004
+constant M_DEFINE_C = 51
 constant M_INSTANCE = 55
+constant M_OPEN_DLL = 50
 constant M_SLEEP = 64
 --------------------------------------------------------------------------------
 --	Shared with other modules
@@ -100,6 +105,7 @@ global constant FREEBSD = 8
 --------------------------------------------------------------------------------
 --	Local
 --------------------------------------------------------------------------------
+atom cur_pid cur_pid = -1
 --------------------------------------------------------------------------------
 --	Shared with other modules
 --------------------------------------------------------------------------------
@@ -113,6 +119,27 @@ global constant FREEBSD = 8
 --------------------------------------------------------------------------------
 --	Shared with other modules
 --------------------------------------------------------------------------------
+global function get_pid() -- gets the pid (ID of the current process)
+    if platform() = WINDOWS then
+        if cur_pid = -1 then
+            cur_pid = machine_func(M_DEFINE_C,
+                        {machine_func(M_OPEN_DLL, "kernel32.dll"),
+                        "GetCurrentProcessId", {}, C_DWORD})
+            if cur_pid >= 0 then
+                cur_pid = c_func(cur_pid, {})
+            end if
+                    end if
+        return cur_pid
+    else return machine_func(M_INSTANCE, 0)
+    end if
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Returns:
+--
+-- an **atom**: the current process' id.
+--*/
+--------------------------------------------------------------------------------
 global function instance()	-- returns hInstance on Windows and Process ID (pid) on Unix
     return machine_func(M_INSTANCE, 0)
 end function
@@ -120,7 +147,7 @@ end function
 --/*
 -- Notes:
 --
--- In Windows the ##hInstance## can be passed around to various Windows routines.
+-- In Windows the //hInstance// can be passed around to various Windows routines.
 --*/
 --------------------------------------------------------------------------------
 global procedure sleep(atom t)	-- go to sleep for t seconds, allowing (on WIN32 and Linux) other processes to run
@@ -131,7 +158,7 @@ end procedure
 --------------------------------------------------------------------------------
 --/*
 -- Parameter:
--- # ##t##: the number of seconds for which to sleep.
+-- # //t//: the number of seconds for which to sleep.
 --
 -- Notes:
 --
@@ -147,6 +174,14 @@ end procedure
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.2
+--Euphoria Versions: 3.1.1 and later
+--Author: C A Newbould
+--Date: 2018.02.24
+--Status: operational; incomplete
+--Changes:]]]
+--* added more OS contants
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.1
 --Euphoria Versions: 3.1.1 and later

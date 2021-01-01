@@ -10,13 +10,13 @@
 -- Description: Re-writing (where necessary) of existing OE4 standard libraries
 -- for use with Eu3
 ------
---[[[Version: 3.2.1.4
+--[[[Version: 3.2.1.5
 --Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
---Date: 2019.01.18
+--Date: 2021.01.01
 --Status: created; incomplete
 --Changes:]]]
---* defined ##C_BOOL##
+--* defined ##C_DWORD##
 --
 ------
 --==Euphoria Standard library: dll
@@ -70,6 +70,7 @@ global constant C_UINT    = #02000004
 global constant C_ULONG   = C_UINT
 global constant C_USHORT  = #02000002
 global constant NULL = 0 -- NULL pointer
+global constant C_DWORD   = C_UINT
 --------------------------------------------------------------------------------
 --
 --=== Euphoria types
@@ -326,6 +327,14 @@ end function
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.4
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2019.01.18
+--Status: created; incomplete
+--Changes:]]]
+--* defined ##C_BOOL##
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.3
 --Euphoria Versions: 3.1.1 upwards

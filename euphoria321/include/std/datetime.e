@@ -3,47 +3,49 @@
 --------------------------------------------------------------------------------
 -- Notes:
 --
--- 
+--
 --------------------------------------------------------------------------------
 --/*
 --= Library: (euphoria)(include)(std)datetime.e
 -- Description: Re-writing (where necessary) of existing OE4 standard libraries
 -- for use with Eu3
 ------
---[[[Version: 3.2.1.6
+--[[[Version: 3.2.1.7
 --Euphoria Versions: 3.1.1 and after
 --Author: C A Newbould
---Date: 2020.12.18
+--Date: 2021.01.01
 --Status: operational; incomplete
 --Changes:]]]
---* ##years_day## defined
---* ##add## defined
+--* ##subtract## defined
+--* ##diff## defined
 --
 ------
 --==Euphoria Standard library: datetime
 --===Constants
---* ##DATE##
---* ##DAYS##
---* ##HOURS##
---* ##MINUTES##
---* ##MONTHS##
---* ##SECONDS##
---* ##WEEKS##
---* ##YEARS##
+--* //DATE//
+--* //DAYS//
+--* //HOURS//
+--* //MINUTES//
+--* //MONTHS//
+--* //SECONDS//
+--* //WEEKS//
+--* //YEARS//
 --===Types
---* ##datetime##
+--* **datetime**
 --===Routines
 -- The following routines are part of the Open Euphoria's standard
 -- library and has been tested/amended to function with Eu3.1.1.
 --* ##add##
 --* ##days_in_month##
 --* ##days_in_year##
+--* ##diff##
 --* ##format##
 --* ##from_date##
 --* ##is_leap_year##
 --* ##new##
 --* ##new_time##
 --* ##now##
+--* ##subtract##
 --* ##weeks_day##
 --* ##years_day##
 --
@@ -83,7 +85,7 @@ constant MINUTE = 5
 constant MONTH = 2
 constant MONTH_ABBRS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
 			"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
-constant MONTH_NAMES = {"January", "February", "March", "April", "May", "June", 
+constant MONTH_NAMES = {"January", "February", "March", "April", "May", "June",
 			"July", "August", "September", "October", "November", "December"}
 constant SECOND = 6
 constant YEAR = 1
@@ -175,7 +177,7 @@ daysInMonth_id = routine_id("daysInMonth")
 function daysInYear(integer year) -- returns a jday_ (355, 365 or 366)
 	if year = GREGORIAN_REFORMATION then
 		return 355
-	end if	
+	end if
 	return 365 + isLeap(year)
 end function
 --------------------------------------------------------------------------------
@@ -347,7 +349,7 @@ end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameter:
---# ##dt## : the datetime to be queried
+--# //dt//: the datetime to be queried
 --
 -- Notes:
 --
@@ -360,11 +362,29 @@ end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameter:
---# ##dt## : the datetime to be queried
+--# //dt//: the datetime to be queried
 --
 -- Notes:
 --
 -- This takes into account whether or not it is a leap year.
+--*/
+--------------------------------------------------------------------------------
+global function diff(datetime dt1, datetime dt2)
+	return datetimeToSeconds(dt2) - datetimeToSeconds(dt1)
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# //dt1//: the datetime to be queried
+--# //dt1//: the second datetime to be compared
+--
+-- Returns:
+--
+-- an **atom**: the number of seconds elapsed from //dt2// to //dt1//
+--
+-- Notes:
+--
+-- //dt2// is subtracted from //dt1//, so a negative value is possible. 
 --*/
 --------------------------------------------------------------------------------
 global function from_date(extended_datetime dt)	-- [datetime] converts a given datetime to a datetime with valid year
@@ -373,7 +393,7 @@ end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameter:
---# ##dt## : an extended datetime (dow & doy added) centred on the base date
+--# //dt//: an extended datetime (dow & doy added) centred on the base date
 --
 -- Returns:
 --
@@ -386,7 +406,7 @@ end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameter:
---   # ##dt##: the datetime to be queried
+--# //dt//: the datetime to be queried
 --
 -- Returns:
 --
@@ -405,12 +425,12 @@ end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameters:
---# ##year##: the full year
---# ##month##: the month (1-12)
---# ##day##: the day of the month (1-31)
---# ##hour##: the hour (0-23)
---# ##minute##: the minute (0-59)
---# ##second##: the second (0-59)
+--# //year//: the full year
+--# //month//: the month (1-12)
+--# //day//: the day of the month (1-31)
+--# //hour//: the hour (0-23)
+--# //minute//: the minute (0-59)
+--# //second//: the second (0-59)
 --
 -- Returns:
 --
@@ -427,9 +447,9 @@ end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameters:
---# ##hour##: the hour (0-23)
---# ##minute##: the minute (0-59)
---# ##second##: the second (0-59)
+--# //hour//: the hour (0-23)
+--# //minute//: the minute (0-59)
+--# //second//: the second (0-59)
 --
 -- Returns:
 --
@@ -443,16 +463,37 @@ end function
 --/*
 -- Returns:
 --
+-- a **datetime** initialized with the current date and time
+--*/
+--------------------------------------------------------------------------------
+global function subtract(datetime dt, object qty, integer interval) -- subtracts a number of intervals to a base datetime
+	return add(dt, -(qty), interval)
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# //dt//: the datetime to be addressed
+--# //qty//: the (positive) number of intervals to subtract
+--# //interval//: which interval unit (eg SECONDS, WEEKS)
+--
+-- Returns:
+--
+-- a **sequence**: the **datetime** representing the new moment in time
+--*/
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+--/*
+-- Returns:
+--
 -- a **datetime** corresponding to the current moment in time
 --*/
 --------------------------------------------------------------------------------
-global function to_unix(datetime dt)	-- converts a datetime value to the Unix numeric format (seconds since ##EPOCH_1970##)
+global function to_unix(datetime dt)	-- converts a datetime value to the Unix numeric format (seconds since //EPOCH_1970//)
 	return datetimeToSeconds(dt) - EPOCH_1970
 end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameter:
--- # ##dt##: the datetime to be queried
+-- # //dt//: the datetime to be queried
 --
 -- Returns:
 --
@@ -465,7 +506,7 @@ end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameters:
---# ##dt##: the datetime to be queried
+--# //dt//: the datetime to be queried
 --
 -- Returns:
 --
@@ -473,12 +514,12 @@ end function
 --*/
 --------------------------------------------------------------------------------
 global function years_day(datetime dt) -- gets the Julian day of year of the supplied date
-	return julianDayOfYear({dt[YEAR], dt[MONTH], dt[DAY]})	
+	return julianDayOfYear({dt[YEAR], dt[MONTH], dt[DAY]})
 end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameters:
---# ##dt##: the datetime to be queried
+--# //dt//: the datetime to be queried
 --
 -- Returns:
 --
@@ -486,7 +527,7 @@ end function
 --*/
 --------------------------------------------------------------------------------
 global function format(datetime d, sequence pattern)	-- formats the date according to the format pattern string
-	integer in_fmt	
+	integer in_fmt
 	integer ch
 	integer tmp
 	sequence res
@@ -581,42 +622,51 @@ end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameters:
---# ##d## : a datetime which is to be printed out
---# ##pattern## : a format string, similar to the ones ##sprintf## uses, but with 
---  some Unicode encoding. The default [""] is ##"%Y-%m-%d %H:%M:%S"##.
+--# //d// : a datetime which is to be printed out
+--# //pattern// : a format string, similar to the ones ##sprintf## uses, but with
+--  some Unicode encoding. The default [""] is //"%Y-%m-%d %H:%M:%S"//.
 --
 -- Returns:
 --
---  a **string**, with the date ##d## formatted according to the specification in ##pattern##.
+--  a **string**, with the date //d// formatted according to the specification in //pattern//.
 --
 -- Comments:
 -- Pattern string can include the following specifiers~:
 --
--- * ##~%%## ~-- a literal %
--- * ##%a## ~-- locale's abbreviated weekday name (e.g., Sun)
--- * ##%A## ~-- locale's full weekday name (e.g., Sunday)
--- * ##%b## ~-- locale's abbreviated month name (e.g., Jan)
--- * ##%B## ~-- locale's full month name (e.g., January)
--- * ##%C## ~-- century; like %Y, except omit last two digits (e.g., 21)
--- * ##%d## ~-- day of month (e.g, 01)
--- * ##%H## ~-- hour (00..23)
--- * ##%I## ~-- hour (01..12)
--- * ##%j## ~-- day of year (001..366)
--- * ##%k## ~-- hour ( 0..23)
--- * ##%l## ~-- hour ( 1..12)
--- * ##%m## ~-- month (01..12)
--- * ##%M## ~-- minute (00..59)
--- * ##%p## ~-- locale's equivalent of either AM or PM; blank if not known
--- * ##%P## ~-- like %p, but lower case
--- * ##%s## ~-- seconds since 1970-01-01 00:00:00 UTC
--- * ##%S## ~-- second (00..60)
--- * ##%u## ~-- day of week (1..7); 1 is Monday
--- * ##%w## ~-- day of week (0..6); 0 is Sunday
--- * ##%y## ~-- last two digits of year (00..99)
--- * ##%Y## ~-- year
+-- * //~%%// ~-- a literal %
+-- * //%a// ~-- locale's abbreviated weekday name (e.g., Sun)
+-- * //%A// ~-- locale's full weekday name (e.g., Sunday)
+-- * //%b// ~-- locale's abbreviated month name (e.g., Jan)
+-- * //%B// ~-- locale's full month name (e.g., January)
+-- * //%C// ~-- century; like %Y, except omit last two digits (e.g., 21)
+-- * //%d// ~-- day of month (e.g, 01)
+-- * //%H// ~-- hour (00..23)
+-- * //%I// ~-- hour (01..12)
+-- * //%j// ~-- day of year (001..366)
+-- * //%k// ~-- hour ( 0..23)
+-- * //%l// ~-- hour ( 1..12)
+-- * //%m// ~-- month (01..12)
+-- * //%M// ~-- minute (00..59)
+-- * //%p// ~-- locale's equivalent of either AM or PM; blank if not known
+-- * //%P// ~-- like %p, but lower case
+-- * //%s// ~-- seconds since 1970-01-01 00:00:00 UTC
+-- * //%S// ~-- second (00..60)
+-- * //%u// ~-- day of week (1..7); 1 is Monday
+-- * //%w// ~-- day of week (0..6); 0 is Sunday
+-- * //%y// ~-- last two digits of year (00..99)
+-- * //%Y// ~-- year
 --*/
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.6
+--Euphoria Versions: 3.1.1 and after
+--Author: C A Newbould
+--Date: 2020.12.18
+--Status: operational; incomplete
+--Changes:]]]
+--* ##years_day## defined
+--* ##add## defined
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.5
 --Euphoria Versions: 3.1.1 and after

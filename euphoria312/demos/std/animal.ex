@@ -6,10 +6,14 @@
 -- question to ask, and which branch to follow in the tree
 -- depending on whether the answer is Yes or No.
 
+--Version: 3.1.1.0
+-- Assigned this version number to signify that it runs in RDS Euphoria
+-- v3.1.1 and later; no included modules called
+
 constant 
     node_type = 1,
-       DESCRIPTION = 1,
-       ANIMAL = 2,
+	DESCRIPTION = 1,
+	ANIMAL = 2,
     question = 2,
     when_true = 3,
     when_false = 4

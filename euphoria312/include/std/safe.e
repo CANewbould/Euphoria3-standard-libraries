@@ -13,7 +13,7 @@
 --Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
 --Date: 2018.05.11
---Status: created; incomplete
+--Status: created; complete
 --Changes:]]]
 --* defined init
 --* defined constants and variables

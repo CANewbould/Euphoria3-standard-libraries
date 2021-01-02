@@ -4,6 +4,7 @@
 -- Notes:
 --
 -- allocate_string is still the Eu3 version
+-- peek2u needs to be added
 --------------------------------------------------------------------------------
 --/*
 --= Library: (eu3.2.1)(include)(std)machine.e

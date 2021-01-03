@@ -10,15 +10,14 @@
 -- Description: Re-writing (where necessary) of existing OE4 standard libraries
 -- for use with Eu3
 ------
---[[[Version: 3.2.1.1
+--[[[Version: 3.2.1.2
 --Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
---Date: 2021.01.01
+--Date: 2021.01.03
 --Status: operational; incomplete
 --Changes:]]]
---* mechanism for OS-related values set up
---* //PAGE_EXECUTE// defined accordingly
---* //PAGE_EXECUTE_READ// defined similarly
+--* local WINDOWS  defined
+--* lost ')' added
 --
 --==Euphoria Standard library: memconst
 --
@@ -56,6 +55,7 @@
 --------------------------------------------------------------------------------
 constant PROT_EXEC = 4
 constant PROT_READ = 1
+constant WINDOWS = 2 -- better than calling os.e
 --------------------------------------------------------------------------------
 --	Local generators
 --------------------------------------------------------------------------------
@@ -70,7 +70,7 @@ end function
 global constant M_ALLOC = 16
 global constant M_FREE = 17
 global constant PAGE_EXECUTE = plat_or(#10, PROT_EXEC)
-global constant PAGE_EXECUTE_READ = plat_or(#20, or_bits(PROT_READ, PROT_EXEC)
+global constant PAGE_EXECUTE_READ = plat_or(#20, or_bits(PROT_READ, PROT_EXEC))
 --------------------------------------------------------------------------------
 --
 --=== Euphoria types
@@ -108,6 +108,16 @@ global constant PAGE_EXECUTE_READ = plat_or(#20, or_bits(PROT_READ, PROT_EXEC)
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.1
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2021.01.01
+--Status: operational; incomplete
+--Changes:]]]
+--* mechanism for OS-related values set up
+--* //PAGE_EXECUTE// defined accordingly
+--* //PAGE_EXECUTE_READ// defined similarly
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.0
 --Euphoria Versions: 3.1.1 upwards

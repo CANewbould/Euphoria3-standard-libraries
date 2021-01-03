@@ -10,13 +10,14 @@
 -- Description: Re-allocation of existing OE4 libraries into standard libraries
 -- for use with Eu3
 ------
---[[[Version: 3.2.1.9
+--[[[Version: 3.2.1.10
 --Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
---Date: 2020.07.17
+--Date: 2020.12.18
 --Status: operational; complete in Eu3 terms
 --Changes:]]]
---* ##format## defined
+--* ##trim## moved
+--* errors in ##format## corrected
 --
 ------
 --==Euphoria Standard library: text
@@ -96,6 +97,55 @@ constant WHITE_SPACE = " \t\r\n"
 --------------------------------------------------------------------------------
 --	Shared with other modules
 --------------------------------------------------------------------------------
+global function trim(sequence source, object what, integer ret_index)	-- trims all items in the supplied set from both the left end (head/start) and right end (tail/end) of a sequence
+	integer rpos
+	integer lpos
+	if atom(what) then
+		what = {what}
+	end if
+	lpos = 1
+	while lpos <= length(source) do
+		if not find(source[lpos], what) then
+			exit
+		end if
+		lpos += 1
+	end while
+	rpos = length(source)
+	while rpos > lpos do
+		if not find(source[rpos], what) then
+			exit
+		end if
+		rpos -= 1
+	end while
+	if ret_index then
+		return {lpos, rpos}
+	else
+		if lpos = 1 then
+			if rpos = length(source) then
+				return source
+			end if
+		end if
+		if lpos > length(source) then
+			return {}
+		end if
+		return source[lpos..rpos]
+	end if
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--   # ##source## : the sequence to trim.
+--   # ##what## : the set of item to trim from ##source## (defaults to ##" \t\r\n"##).
+--   # ##ret_index## : If zero (the default) returns the trimmed sequence, otherwise
+--                    it returns a 2-element sequence containing the index of the
+--                    leftmost item and rightmost item **not** in ##what##.
+--
+-- Returns:
+--
+--   A **sequence**, if ##ret_index## is zero, which is the trimmed version of ##source##
+--   A **2-element sequence**, if ##ret_index## is not zero, in the form ##{left_index, right_index}## .
+--*/
+--------------------------------------------------------------------------------
 global function format(sequence format_pattern, object arg_list) -- formats a set of arguments into a string, based on a supplied pattern
 	integer align
 	integer alt
@@ -123,6 +173,7 @@ global function format(sequence format_pattern, object arg_list) -- formats a se
 	integer sp
 	integer spacer
 	integer tch
+	object tempv
 	integer tend
 	integer trimming
 	integer tsep
@@ -243,7 +294,7 @@ global function format(sequence format_pattern, object arg_list) -- formats a se
 					end if
 					i += 1
 				end while
-				idname = trim(format_pattern[sp .. i-1]) & '='
+				idname = trim(format_pattern[sp .. i-1], WHITE_SPACE, 0) & '='
 				if format_pattern[i] = ']' then
 					i -= 1
 				end if
@@ -273,7 +324,7 @@ global function format(sequence format_pattern, object arg_list) -- formats a se
 					end if
 					i += 1
 				end while
-				envsym = trim(format_pattern[sp .. i-1])
+				envsym = trim(format_pattern[sp .. i-1], WHITE_SPACE, 0)
 				if format_pattern[i] = ']' then
 					i -= 1
 				end if
@@ -326,7 +377,7 @@ global function format(sequence format_pattern, object arg_list) -- formats a se
 						end if
 					elsif integer(arg_list[argn]) then
 						if istext then
-							argtext = {and_bits(0xFFFF_FFFF, math:abs(arg_list[argn]))}
+							argtext = {and_bits(#FFFFFFFF, math:abs(arg_list[argn]))}
 							
 						elsif bwz != 0 and arg_list[argn] = 0 then
 							argtext = repeat(' ', width)
@@ -385,7 +436,7 @@ global function format(sequence format_pattern, object arg_list) -- formats a se
 						end if
 					elsif atom(arg_list[argn]) then
 						if istext then
-							argtext = {and_bits(0xFFFF_FFFF, math:abs(floor(arg_list[argn])))}
+							argtext = {and_bits(#FFFFFFFF, math:abs(floor(arg_list[argn])))}
 						else
 							if hexout then
 								argtext = sprintf("%x", arg_list[argn])
@@ -395,11 +446,11 @@ global function format(sequence format_pattern, object arg_list) -- formats a se
 									end if
 								end if
 							else
-								argtext = trim(sprintf("%15.15g", arg_list[argn]))
+								argtext = trim(sprintf("%15.15g", arg_list[argn]), WHITE_SPACE, 0)
 								-- Remove any leading 0 after e+
-								while ep != 0 with entry do
-									argtext = remove(argtext, ep+2)
-								entry
+								ep = match("e+0", argtext)
+								while ep != 0 do
+									argtext = remove(argtext, ep+2, ep+2)
 									ep = match("e+0", argtext)
 								end while
 								if zfill != 0 and width > 0 then
@@ -436,7 +487,6 @@ global function format(sequence format_pattern, object arg_list) -- formats a se
 						end if
 					else
 						if alt != 0 and length(arg_list[argn]) = 2 then
-							object tempv
 							if atom(prevargv) then
 								if prevargv != 1 then
 									tempv = arg_list[argn][1]
@@ -454,7 +504,7 @@ global function format(sequence format_pattern, object arg_list) -- formats a se
 								argtext = tempv
 							elsif integer(tempv) then
 								if istext then
-									argtext = {and_bits(0xFFFF_FFFF, math:abs(tempv))}
+									argtext = {and_bits(#FFFFFFFF, math:abs(tempv))}
 							
 								elsif bwz != 0 and tempv = 0 then
 									argtext = repeat(' ', width)
@@ -463,11 +513,11 @@ global function format(sequence format_pattern, object arg_list) -- formats a se
 								end if
 							elsif atom(tempv) then
 								if istext then
-									argtext = {and_bits(0xFFFF_FFFF, math:abs(floor(tempv)))}
+									argtext = {and_bits(#FFFFFFFF, math:abs(floor(tempv)))}
 								elsif bwz != 0 and tempv = 0 then
 									argtext = repeat(' ', width)
 								else
-									argtext = trim(sprintf("%15.15g", tempv))
+									argtext = trim(sprintf("%15.15g", tempv), WHITE_SPACE, 0)
 								end if
 							else
 								argtext = pretty:pretty_sprint( tempv,
@@ -601,7 +651,7 @@ global function format(sequence format_pattern, object arg_list) -- formats a se
     				end if
     			end if
    				if trimming then
-   					result = trim(result)
+   					result = trim(result, WHITE_SPACE, 0)
    				end if
     			tend = 0
 		    	prevargv = currargv
@@ -793,55 +843,6 @@ end function
 --
 -- The atoms contained within ##x## will be displayed to a maximum of 10 significant digits,
 -- just as with ##print##.
---*/
---------------------------------------------------------------------------------
-global function trim(sequence source, object what, integer ret_index)	-- trims all items in the supplied set from both the left end (head/start) and right end (tail/end) of a sequence
-	integer rpos
-	integer lpos
-	if atom(what) then
-		what = {what}
-	end if
-	lpos = 1
-	while lpos <= length(source) do
-		if not find(source[lpos], what) then
-			exit
-		end if
-		lpos += 1
-	end while
-	rpos = length(source)
-	while rpos > lpos do
-		if not find(source[rpos], what) then
-			exit
-		end if
-		rpos -= 1
-	end while
-	if ret_index then
-		return {lpos, rpos}
-	else
-		if lpos = 1 then
-			if rpos = length(source) then
-				return source
-			end if
-		end if
-		if lpos > length(source) then
-			return {}
-		end if
-		return source[lpos..rpos]
-	end if
-end function
---------------------------------------------------------------------------------
---/*
--- Parameters:
---   # ##source## : the sequence to trim.
---   # ##what## : the set of item to trim from ##source## (defaults to ##" \t\r\n"##).
---   # ##ret_index## : If zero (the default) returns the trimmed sequence, otherwise
---                    it returns a 2-element sequence containing the index of the
---                    leftmost item and rightmost item **not** in ##what##.
---
--- Returns:
---
---   A **sequence**, if ##ret_index## is zero, which is the trimmed version of ##source##
---   A **2-element sequence**, if ##ret_index## is not zero, in the form ##{left_index, right_index}## .
 --*/
 --------------------------------------------------------------------------------
 global  function trim_head(sequence source, object what, integer ret_index)	-- trims all items in the supplied set from the leftmost (start or head) of a sequence
@@ -1072,6 +1073,14 @@ end function
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.9
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2020.07.17
+--Status: operational; complete in Eu3 terms
+--Changes:]]]
+--* ##format## defined
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.8
 --Euphoria Versions: 3.1.1 upwards

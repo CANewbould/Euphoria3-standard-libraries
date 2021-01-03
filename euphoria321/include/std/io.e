@@ -64,7 +64,7 @@
 --=== Includes
 --
 --------------------------------------------------------------------------------
-include machine.e as machine    -- for allocate
+include machine.e as machine    -- for allocate, peek2u
 include os.e	-- for LINUX, UNIX, WINDOWS
 include search.e as search  -- for match_replace
 --------------------------------------------------------------------------------

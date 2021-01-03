@@ -10,13 +10,13 @@
 -- Description: Re-writing (where necessary) of existing OE4 standard libraries
 -- for use with Eu3
 ------
---[[[Version:3.2.1.3
+--[[[Version:3.2.1.4
 --Euphoria Versions: 3.1.1 and later
 --Author: C A Newbould
---Date: 2019.03.11
+--Date: 2020.12.18
 --Status: operational; incomplete
 --Changes:]]]
---* ##find_any## defined
+--* ##begins## defined
 --
 ------
 --==Euphoria Standard library: search
@@ -25,6 +25,7 @@
 --===Routines
 -- The following routines are part of the Open Euphoria's standard
 -- library and have been tested/amended to function with Eu3.1.1.
+--* ##begins##
 --* ##find_any##
 --* ##match_replace##
 --* ##rfind##
@@ -52,6 +53,8 @@ include sequence.e	-- for replace
 --------------------------------------------------------------------------------
 --	Local
 --------------------------------------------------------------------------------
+constant FALSE = 0
+constant TRUE = 1
 --------------------------------------------------------------------------------
 --	Shared with other modules
 --------------------------------------------------------------------------------
@@ -84,6 +87,56 @@ include sequence.e	-- for replace
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --	Shared with other modules
+--------------------------------------------------------------------------------
+global function begins(object sub_text, sequence full_text) -- tests whether a sequence is the head of another one
+    integer lenf
+    integer lens
+    lenf = length(full_text)
+    if lenf = 0 then return 0
+    end if
+    if atom(sub_text) then
+	if equal(sub_text, full_text[1]) then
+	    return TRUE
+	else
+	    return FALSE
+	end if
+    end if
+    lens = length(sub_text)
+    if lens > lenf then
+	return FALSE
+    end if
+    if equal(sub_text, full_text[1..lens]) then
+	return TRUE
+    else
+	return FALSE
+    end if
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# //sub_text//: the possible leading sub-sequence
+--# //full_text//: the full sequence to search
+--
+-- Returns:
+--
+-- a **boolean**: //TRUE// if //sub_text// begins //full_text//
+--
+-- Notes:
+--
+--  If //sub_text// is an empty sequence, this returns //TRUE// unless //full_text// 
+--  is also an empty sequence.  When they are both empty sequences this returns 
+--  //FALSE//.
+--
+-- Example:
+-- <eucode>s = begins("abc", "abcdef")
+-- -- s is 1
+-- s = begins("bcd", "abcdef")
+-- -- s is 0</eucode>
+--
+-- See Also:
+--
+-- ##ends##, ##head##
+--*/
 --------------------------------------------------------------------------------
 global function find_any(object needles, sequence haystack, integer start)	-- finds, inside a sequence, any element from a list
 	if start <= 0 or start > length(haystack) then start = 1 end if
@@ -218,6 +271,14 @@ end function
 --------------------------------------------------------------------------------
 -- Previous versions
 --------------------------------------------------------------------------------
+--[[[Version:3.2.1.3
+--Euphoria Versions: 3.1.1 and later
+--Author: C A Newbould
+--Date: 2019.03.11
+--Status: operational; incomplete
+--Changes:]]]
+--* ##find_any## defined
+--------------------------------------------------------------------------------
 --[[[Version:3.2.1.2
 --Euphoria Versions: 3.1.1 and later
 --Author: C A Newbould
@@ -242,4 +303,4 @@ end function
 --Changes:]]]
 --* defined ##match_replace##
 --------------------------------------------------------------------------------
-­45.12
+ï¿½45.12

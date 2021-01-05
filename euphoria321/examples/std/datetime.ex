@@ -3,19 +3,22 @@
 --------------------------------------------------------------------------------
 -- Notes:
 --
--- 
+--
 --------------------------------------------------------------------------------
 --/*
 --= Program: (euphoria)(demos)(std)datetime.ex
 -- Description: test program for Eu3's datetime routines
 ------
---[[[Version: 3.2.1.4
---Euphoria Versions: 3.1.1 upwards 
+--[[[Version: 3.2.1.5
+--Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
---Date: 2021.01.01
+--Date: 2021.01.05
 --Status: operational
 --Changes:]]]
---* dealt with 'eui' vs 'euiw'
+--* tests of ##parse## added
+--* command-line checking process modified to allow for RDS, OE4 in both
+--  lower and upper-cases
+--* card renamed cardinal
 --
 --==Testing datetime routines
 --
@@ -72,7 +75,7 @@ constant SCREEN = 1
 --------------------------------------------------------------------------------
 --	Local
 --------------------------------------------------------------------------------
-function card(integer i)
+function cardinal(integer i)
     if i = 1 then return "st"
     elsif i = 2 then return "nd"
     elsif i = 3 then return "rd"
@@ -103,21 +106,28 @@ procedure main()
     puts(SCREEN, "The date now is: ")
     printf(SCREEN, "%02d-%02d-%4d; time %02d:%02d:%02d" & EOL,
 				{Now[3], Now[2], Now[1], Now[4], Now[5], Now[6]})
-	puts(SCREEN, "--- default 'format()' ---")
+	puts(SCREEN, "--- default 'format()' ---" & EOL)
     puts(SCREEN, format(Now, "") & EOL)
-    days = years_day(Now)			
-    printf(SCREEN, "It is the %d%s day of the year" & EOL, {days, card(days)})
+    days = years_day(Now)
+    printf(SCREEN, "It is the %d%s day of the year" & EOL, {days, cardinal(days)})
     puts(SCREEN, "In a week's time it will be: ")
     NextWeek = add(Now, 7, DAYS)
-    printf(SCREEN, "%02d-%02d-%4d" & EOL, {NextWeek[3], NextWeek[2], NextWeek[1]})           
+    printf(SCREEN, "%02d-%02d-%4d" & EOL, {NextWeek[3], NextWeek[2], NextWeek[1]})
     printf(SCREEN, "In that time %d minutes will have elapsed" & EOL, {diff(Now, NextWeek)/60})
     puts(SCREEN, "--- 'days_in_month()' ---" & EOL)
     Y2020 = {2020, 2, 12, 00, 00, 00}
     printf(SCREEN, "In %d there were %d days in Feb and %d overall" & EOL,
                 {Y2020[1], days_in_month(Y2020), days_in_year(Y2020)})
+    puts(SCREEN, "--- 'parse()' ---" & EOL)
+    puts(SCREEN, "parse(\"05/01/2009 10:20:30\", \"%m/%d/%Y %H:%M:%S\", 0) -> ")
+    ? parse("05/01/2009 10:20:30", "%m/%d/%Y %H:%M:%S", 0)
+    puts(SCREEN, "parse(\"05/14/64\", \"%m/%d/%y\", -60) -> ")
+    ? parse("05/14/64", "%m/%d/%y", -60)
     cmdline = command_line()
-    if equal(cmdline[1], "euiw") then
-        puts(SCREEN, EOL & repeat('-', length(CLOSURE)))
+    cmdline = cmdline[1]
+    if match("euiw", cmdline) or match("exw", cmdline)
+    or match("EUIW", cmdline) or match("EXW", cmdline) then
+        puts(SCREEN, repeat('-', length(CLOSURE)))
         puts(SCREEN, CLOSURE)
         if getc(0) then end if
     end if
@@ -129,8 +139,16 @@ main()
 --------------------------------------------------------------------------------
 -- Previous versions
 --------------------------------------------------------------------------------
+--[[[Version: 3.2.1.4
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2021.01.01
+--Status: operational
+--Changes:]]]
+--* dealt with 'eui' vs 'euiw'
+--------------------------------------------------------------------------------
 --[[[Version: 3.2.1.3
---Euphoria Versions: 3.1.1 upwards 
+--Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
 --Date: 2021.01.01
 --Status: operational
@@ -140,7 +158,7 @@ main()
 --* added test of ##diff##
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.2
---Euphoria Versions: 3.1.1 upwards 
+--Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
 --Date: 2020.12.18
 --Status: operational
@@ -149,7 +167,7 @@ main()
 --* added test of ##add##
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.1
---Euphoria Versions: 3.1.1 upwards 
+--Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
 --Date: 2019.03.19
 --Status: operational
@@ -157,7 +175,7 @@ main()
 --* added test of ##format##
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.0
---Euphoria Versions: 3.1.1 upwards 
+--Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
 --Date: 2019.03.05
 --Status: operational

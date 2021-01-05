@@ -10,14 +10,13 @@
 -- Description: Re-writing (where necessary) of existing OE4 standard libraries
 -- for use with Eu3
 ------
---[[[Version: 3.2.1.7
+--[[[Version: 3.2.1.8
 --Euphoria Versions: 3.1.1 and after
 --Author: C A Newbould
---Date: 2021.01.01
---Status: operational; incomplete
+--Date: 2021.01.05
+--Status: operational; complete
 --Changes:]]]
---* ##subtract## defined
---* ##diff## defined
+--* ##parse## defined
 --
 ------
 --==Euphoria Standard library: datetime
@@ -45,6 +44,7 @@
 --* ##new##
 --* ##new_time##
 --* ##now##
+--* ##parse##
 --* ##subtract##
 --* ##weeks_day##
 --* ##years_day##
@@ -62,7 +62,8 @@
 --=== Includes
 --*/
 --------------------------------------------------------------------------------
-include types.e -- for FALSE, TRUE
+include get.e as stdget -- for value
+include types.e as types -- for FALSE, TRUE, t_digit
 --------------------------------------------------------------------------------
 --/*
 --=== Constants
@@ -384,7 +385,7 @@ end function
 --
 -- Notes:
 --
--- //dt2// is subtracted from //dt1//, so a negative value is possible. 
+-- //dt2// is subtracted from //dt1//, so a negative value is possible.
 --*/
 --------------------------------------------------------------------------------
 global function from_date(extended_datetime dt)	-- [datetime] converts a given datetime to a datetime with valid year
@@ -657,7 +658,161 @@ end function
 -- * //%Y// ~-- year
 --*/
 --------------------------------------------------------------------------------
+constant DATE_NOW = now()
+global function parse(sequence val, sequence fmt, integer yylower) -- parse a datetime string according to the given format
+	integer century
+	integer epos
+	integer fpos
+	sequence got
+	integer maxlen
+	sequence res
+	integer rpos
+	integer spos
+	integer year
+	fpos = 1
+	spos = 1
+	res = repeat(0, 6)
+	if length(fmt) = 0 then fmt = "%Y-%m-%d %H:%M:%S" end if -- default
+	if yylower = 0 then yylower = -80 end if -- default
+	while fpos <= length(fmt) do
+		if fmt[fpos] = 'Y' then
+			rpos = 1
+			maxlen = 4
+		elsif fmt[fpos] = 'y' then
+			rpos = 1
+			maxlen = 2
+		elsif fmt[fpos] = 'm' then
+			rpos = 2
+			maxlen = 2
+		elsif fmt[fpos] = 'd' then
+			rpos = 3
+			maxlen = 2
+		elsif fmt[fpos] = 'H' then
+			rpos = 4
+			maxlen = 2
+		elsif fmt[fpos] = 'M' then
+			rpos = 5
+			maxlen = 2
+		elsif fmt[fpos] = 'S' then
+			rpos = 6
+			maxlen = 2
+		else
+			-- Ignore '%', '-', '/', ' ', ':'  and any invalid format character.
+			rpos = 0
+		end if
+		if rpos then
+			while spos <= length(val) do
+				if types:t_digit(val[spos]) then
+					exit
+				end if
+				spos += 1
+			end while
+			epos = spos + 1
+			while epos <= length(val) and epos < spos + maxlen do
+				if not types:t_digit(val[epos]) then
+					exit
+				end if
+				epos += 1
+			end while
+			if spos > length(val) then
+				return -1
+			end if
+			got = stdget:value(val[spos..epos-1])--, 1, stdget:GET_LONG_ANSWER)
+			if got[1] != stdget:GET_SUCCESS then
+				return -1
+			end if
+			-- If this is a 2 digit year we have to do some special handling
+			if fmt[fpos] = 'y' then
+				-- Adjust the date to be not more than yysplit years ago
+				century = floor(DATE_NOW[YEAR] / 100) * 100
+				year = got[2] + (century - 100)
+				if year < (DATE_NOW[YEAR] + yylower) then
+					year = got[2] + century
+				end if
+				got[2] = year
+			end if
+			res[rpos] = got[2]
+			spos = epos
+		end if
+		fpos += 1
+	end while
+	-- Ensure that what we got could be a date-time value.
+	if not datetime(res) then
+		return -1
+	end if
+	-- Ensure no remaining digits in string.
+	while spos <= length(val) do
+		if types:t_digit(val[spos]) then
+			return -1
+		end if
+		spos += 1
+	end while
+	return new(res[1], res[2], res[3], res[4], res[5], res[6])
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# //val//: string datetime value
+--# //fmt//: datetime format. Default [""] is "%Y-%m-%d %H:%M:%S"
+--# //yysplit//: Set the maximum difference from the current year when parsing
+--     a two digit year. Default [0] is -80/+20.
+--
+-- Returns:
+-- a **datetime**: the formatted value.
+--
+-- Notes:
+--
+--   Only a subset of the format specification is currently supported:
+--
+--   * //%d// ~--  day of month (e.g, 01)
+--   * //%H// ~--  hour (00..23)
+--   * //%m// ~--  month (01..12)
+--   * //%M// ~--  minute (00..59)
+--   * //%S// ~--  second (00..60)
+--   * //%y// ~--  2-digit year (YY)
+--   * //%Y// ~--  4-digit year (CCYY)
+--
+--   More format codes will be added in future versions.
+--   All non-format characters in the format string are ignored and are not
+--   matched against the input string.
+--
+--   All non-digits in the input string are ignored.
+--
+-- Parsing Two Digit Years:
+--   When parsing a two digit year ##parse## has to make a decision if a given year
+--   is in the past or future. For example, 10/18/44. Is that Oct 18, 1944 or
+--   Oct 18, 2044. A common rule has come about for this purpose and that is the -80/+20
+--   rule. Based on research it was found that more historical events are recorded than
+--   future events, thus it favours history rather than future. Some other applications may
+--   require a different rule, thus the //yylower// parameter can be supplied.
+--
+--   Assuming today is 12/22/2020 here is an example of the -80/+20 rule
+--   || YY || Diff   || CCYY ||
+--   | 18   | -2/+98  |  2018 |
+--   | 95   | -25/+75 |  1995 |
+--   | 33   | -87/+13 |  2033 |
+--   | 72   | -48/+52 |  1972 |
+--
+--   Another rule in use is the -50/+50 rule. Therefore, if you supply -50 to the //yylower//
+--   to set the lower bounds, if today is 12/22/2020 then the following apply:
+--   || YY || Diff   || CCYY ||
+--   | 18   | -2/+98  |  2018 |
+--   | 95   | -25/+75 |  1995 |
+--   | 33   | -87/+13 |  2033 |
+--   | 72   | -48/+52 |  1972 |
+--
+--*/
+--------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.7
+--Euphoria Versions: 3.1.1 and after
+--Author: C A Newbould
+--Date: 2021.01.01
+--Status: operational; incomplete
+--Changes:]]]
+--* ##subtract## defined
+--* ##diff## defined
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.6
 --Euphoria Versions: 3.1.1 and after

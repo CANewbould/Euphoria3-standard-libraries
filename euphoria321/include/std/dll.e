@@ -13,10 +13,23 @@
 --[[[Version: 3.2.1.5
 --Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
---Date: 2021.01.01
---Status: created; incomplete
+--Date: 2021.01.05
+--Status: created; complete
 --Changes:]]]
---* defined ##C_DWORD##
+--* defined //C_BYTE//
+--* defined //C_UBYTE//
+--* defined //C_WORD//
+--* defined //C_HANDLE//
+--* defined //C_DWORD//
+--* defined //C_LPARAM//
+--* defined //C_WPARAM//
+--* defined //C_HRESULT//
+--* defined //C_DWORDLONG//
+--* defined //E_INTEGER//
+--* defined //E_ATOM//
+--* defined //E_SEQUENCE//
+--* defined //E_OBJECT//
+--* annotated C_.. constants
 --
 ------
 --==Euphoria Standard library: dll
@@ -57,20 +70,34 @@ constant M_OPEN_DLL = 50
 --------------------------------------------------------------------------------
 --	Shared with other modules
 --------------------------------------------------------------------------------
-global constant C_BOOL    = #01000004	-- same as C_INT (below)
-global constant C_CHAR    = #01000001
-global constant C_DOUBLE  = #03000008
-global constant C_FLOAT   = #03000004
-global constant C_INT     = #01000004
-global constant C_LONG    = C_INT
-global constant C_POINTER = #02000004	-- same as C_ULONG
-global constant C_SHORT   = #01000002
-global constant C_UCHAR   = #02000001
-global constant C_UINT    = #02000004
-global constant C_ULONG   = C_UINT
-global constant C_USHORT  = #02000002
+global constant C_BOOL    = #01000004	--** bool 32-bits
+global constant C_BYTE    = #01000001   --** byte  8-bits
+global constant C_CHAR    = #01000001   --** char  8-bits
+global constant C_DOUBLE  = #03000008   --** double 64-bits
+global constant C_DWORD   = #02000004   --** dword 32-bits
+global constant C_DWORDLONG  = #03000008--** dwordlong 64-bits
+global constant C_FLOAT   = #03000004   --** float 32-bits
+global constant C_HANDLE  = #02000004   --** handle 32-bits
+global constant C_HRESULT = #01000004   --** hresult 32-bits
+global constant C_HWND    = #02000004   --** hwnd 32-bits
+global constant C_INT     = #01000004   --** int 32-bits
+global constant C_LONG    = C_INT       --** long 32-bits
+global constant C_LPARAM  = C_LONG      --** lparam 32-bits
+global constant C_POINTER = #02000004   --** any valid pointer 32-bits
+global constant C_SHORT   = #01000002   --** short 16-bits
+global constant C_SIZE_T  = #02000004   --** size_t 32-bits
+global constant C_UBYTE   = #02000001   --** ubyte 8-bits
+global constant C_UCHAR   = #02000001   --** unsigned char 8-bits
+global constant C_UINT    = #02000004   --** unsigned int 32-bits
+global constant C_ULONG   = C_UINT      --** unsigned long 32-bits
+global constant C_USHORT  = #02000002   --** unsigned short 16-bits
+global constant C_WORD    = #01000002   --** word 16-bits
+global constant C_WPARAM  = C_LONG      --** wparam 32-bits
+global constant E_INTEGER = #06000004   --** integer
+global constant E_ATOM    = #07000004   --** atom
+global constant E_SEQUENCE = #08000004   --** sequence
+global constant E_OBJECT  = #09000004   --** object
 global constant NULL = 0 -- NULL pointer
-global constant C_DWORD   = C_UINT
 --------------------------------------------------------------------------------
 --
 --=== Euphoria types

@@ -4,21 +4,20 @@
 -- Notes:
 --
 -- allocate_string is still the Eu3 version
--- peek2u needs to be added
+-- poke2 needs to be added; might need to look at conversion then standard poking
 --------------------------------------------------------------------------------
 --/*
 --= Library: (eu3.2.1)(include)(std)machine.e
 -- Description: Re-allocation of existing OE4 libraries into standard libraries
 -- for use with Eu3
 ------
---[[[Version: 3.2.1.5
+--[[[Version: 3.2.1.6
 --Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
---Date: 2020.08.04
+--Date: 2021.01.19
 --Status: operational; incomplete
 --Changes:]]]
---* ##free_pointer_array## defined
---* //M_ALLOC// and //M_FREE// deleted, as now available through memory.e
+--* ##peek2u## defined
 --
 ------
 --==Euphoria Standard library: machine
@@ -31,6 +30,7 @@
 --* ##allocate_string##
 --* ##free##
 --* ##free_pointer_array##
+--* ##peek2u##
 --* ##peek_string##
 --* ##register_block##
 --* ##unregister_block##
@@ -306,6 +306,66 @@ end function
 -- a sequence of garbage.
 --*/
 --------------------------------------------------------------------------------
+function peek2u_(atom addr) --> atom
+	sequence peeked peeked = peek({addr,2})
+	return peeked[2] * 256 + peeked[1]
+end function
+--------------------------------------------------------------------------------
+global function peek2u(object addr_n_length) --> [object] atom|vector (integral)
+	sequence ret
+	atom addr
+	integer len
+	if atom(addr_n_length) then return peek2u_(addr_n_length)
+	else    
+		addr = addr_n_length[1]
+		len = addr_n_length[2]
+		ret = {}
+		for i = 1 to len do
+			ret &= peek2u_(addr)
+			addr += 2
+		end for
+		return ret
+	end if
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# //addr_n_length: either
+--## an **atom**: to fetch one double word at the statede address, or
+--## a **sequence** pair {addr,len}: to fetch len double words starting at addr
+--
+-- Returns:
+--
+-- an **object**: either
+--* an **integer** if the input was a single address, or
+--* a **sequence** of integers if a sequence was passed.
+--
+-- In both cases, integers returned are words, in the range 0..65535.
+--
+-- Errors:
+--
+-- Peek() in memory you don't own may be blocked by the OS, and cause a machine exception.
+-- If you use the define safe these routines will catch these problems with a EUPHORIA error.
+--
+-- When supplying a {address, count} sequence, the count must not be negative.
+--
+-- Notes:
+--
+-- Since addresses are 32-bit numbers, they can be larger than the largest value of type
+-- integer (31-bits). Variables that hold an address should therefore be declared as atoms.
+--
+-- It is faster to read several words at once using the second form of ##peek2u##than it is
+-- to read one word at a time in a loop.
+-- The returned sequence has the length you asked for on input.
+--
+-- Remember that ##peek2## takes just one argument,
+-- which in the second form is actually a 2-element sequence.
+--
+-- The only difference between ##peek2s## and ##peek2u// is how words with the highest bit
+-- set are returned. The function ##peek2s## assumes them to be negative, while ##peek2u##
+-- just assumes them to be large and positive.
+--*/
+--------------------------------------------------------------------------------
 global procedure register_block(atom block_addr, atom block_len)	-- see safe.e for usage
 end procedure
 --------------------------------------------------------------------------------
@@ -320,6 +380,15 @@ end procedure
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.5
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2020.08.04
+--Status: operational; incomplete
+--Changes:]]]
+--* ##free_pointer_array## defined
+--* //M_ALLOC// and //M_FREE// deleted, as now available through memory.e
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.4
 --Euphoria Versions: 3.1.1 upwards

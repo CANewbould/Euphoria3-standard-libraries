@@ -9,23 +9,19 @@
 --= Program: (euphoria)(examples)(std)machine.ex
 -- Description: test program for Eu3's machine routines
 ------
---[[[Version: 3.2.1.0
+--[[[Version: 3.2.1.1
 --Euphoria Versions: 3.1.1 upwards 
 --Author: C A Newbould
---Date: 2017.08.12
+--Date: 2021.01.19
 --Status: operational
 --Changes:]]]
---* added test for ##allocate_string##
---* added test for ##peek_string##
+--* added test for ##peek2u##
 --
 --==Testing machine routines
 --
 --
 ------
 --*/
---------------------------------------------------------------------------------
--- Previous versions
---------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --/*
 --==Interface
@@ -88,14 +84,25 @@ constant fred = allocate_string("This is a test")
 --*/
 --------------------------------------------------------------------------------
 procedure main()
+    atom origin
+    sequence peeked
     puts(SCREEN, repeat('-', length(LIB) + 16) & EOL)
     puts(SCREEN, "*** Testing " & LIB & " ***" & EOL)
     puts(SCREEN, repeat('-', length(LIB) + 16) & EOL)
     puts(SCREEN, "--- Testing allocate_string ---" & EOL)
     puts(SCREEN, "allocated a string \"This is a test\"" & EOL)
+    puts(SCREEN, "--- Testing peek_string ---" & EOL)
     puts(SCREEN, "peek_string(fred) -> ")
-    puts(1, peek_string(fred))    
-    puts(SCREEN, EOL & repeat('-', length(CLOSURE)))
+    puts(1, peek_string(fred) & EOL)
+    origin = allocate(10)
+    poke(origin, 123456789)
+    peeked = peek({origin,2})
+    puts(SCREEN, "--- Testing peek2u ---" & EOL)
+    puts(SCREEN, "peek({origin,2}) -> ") ?peeked
+    puts(SCREEN, "So result should be: ") ?(peeked[2] * 256 + peeked[1])  
+    puts(SCREEN, "peek2u(origin) -> ") ?peek2u(origin)   
+    puts(SCREEN, "peek2u({origin,2}) -> ") ?peek2u({origin,2})   
+    puts(SCREEN, repeat('-', length(CLOSURE)))
     puts(SCREEN, CLOSURE)
     if getc(0) then end if
 end procedure
@@ -103,5 +110,16 @@ end procedure
 -- Main
 --------------------------------------------------------------------------------
 main()
+--------------------------------------------------------------------------------
+-- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.0
+--Euphoria Versions: 3.1.1 upwards 
+--Author: C A Newbould
+--Date: 2017.08.12
+--Status: operational
+--Changes:]]]
+--* added test for ##allocate_string##
+--* added test for ##peek_string##
 --------------------------------------------------------------------------------
 ­1.0

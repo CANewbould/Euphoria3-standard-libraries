@@ -10,14 +10,14 @@
 -- Description: Re-writing (where necessary) of existing OE4 standard libraries
 -- for use with Eu3
 ------
---[[[Version: 3.2.1.5
+--[[[Version: 3.2.1.7
 --Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
---Date: 2020.12.04
+--Date: 2021.01.22
 --Status: operational; incomplete
 --Changes:]]]
---* defined ##pathinfo##
---* defined //SLASHES//
+--* ##dirname## defined
+--* ##filename## defined
 --
 ------
 --==Euphoria Standard library: filesys
@@ -26,8 +26,12 @@
 -- library and have been tested/amended to function with Eu3.2.1.
 --* ##chdir##
 --* ##create_directory##
+--* ##create_file##
 --* ##current_dir##
+--* ##delete_file##
 --* ##dir##
+--* ##dirname##
+--* ##filename##
 --* ##pathinfo##
 --* ##walk_dir##
 --
@@ -46,7 +50,7 @@
 --*/
 --------------------------------------------------------------------------------
 include dll.e	-- for define_c_func, open_dll & C types
-include machine.e as machine	-- for allocate_string
+include machine.e as machine	-- for allocate_string, free
 include search.e as search	-- for rfind
 include sort.e  -- for sort
 include os.e    -- for LINUX
@@ -66,6 +70,12 @@ constant NO_ROUTINE_ID = -99999
 --------------------------------------------------------------------------------
 --	Shared with other modules
 --------------------------------------------------------------------------------
+function IfWin(object ifWin, object other) -- local function to set slash[es]
+	if platform() = WINDOWS then return ifWin
+    else return other
+    end if
+end function
+--------------------------------------------------------------------------------
 global constant D_NAME = 1
 global constant D_ATTRIBUTES = 2
 global constant D_SIZE = 3
@@ -75,6 +85,8 @@ global constant D_DAY = 6
 global constant D_HOUR = 7
 global constant D_MINUTE = 8
 global constant D_SECOND = 9
+global constant SLASH = IfWin('\\', '/')
+global constant SLASHES = IfWin("\\/:", "/")
 global constant W_BAD_PATH = -1 -- error code
 --------------------------------------------------------------------------------
 --
@@ -93,26 +105,15 @@ global constant W_BAD_PATH = -1 -- error code
 --------------------------------------------------------------------------------
 --	Local
 --------------------------------------------------------------------------------
-integer SLASH
-sequence SLASHES
-if platform() = WINDOWS then
-	SLASH='\\'
-	SLASHES = "\\/:"
-else
-	SLASH='/'
-	SLASHES = "/"
-end if
 integer dir_id
 atom lib	-- needs to be > integer
-integer xCreateDirectory
-if platform() = WINDOWS then
-    lib = open_dll("kernel32")
-    xCreateDirectory = define_c_func(lib, "CreateDirectoryA", 
-		{C_POINTER, C_POINTER}, C_BOOL)
-elsif platform() = LINUX then
-    lib = open_dll("")
-    xCreateDirectory = define_c_func(lib, "mkdir", {C_POINTER, C_INT}, C_INT)
-end if
+lib = IfWin(open_dll("kernel32"), open_dll(""))
+atom xCreateDirectory
+xCreateDirectory = IfWin(define_c_func(lib, "CreateDirectoryA", {C_POINTER, C_POINTER}, C_BOOL),
+						define_c_func(lib, "mkdir", {C_POINTER, C_INT}, C_INT))
+atom xDeleteFile
+xDeleteFile = IfWin(define_c_func(lib, "DeleteFileA", {C_POINTER}, C_BOOL),
+					define_c_func(lib, "unlink", {C_POINTER}, C_INT))
 --------------------------------------------------------------------------------
 --	Shared with other modules
 --------------------------------------------------------------------------------
@@ -129,11 +130,8 @@ function default_dir(sequence path)
 -- * sorts by name *
     object d    
     d = call_func(dir_id, {path})
-    if atom(d) then
-    	return d
-    else
-    	-- sort by name
-    	return sort(d, ASCENDING)
+    if atom(d) then return d
+    else return sort(d, ASCENDING)
     end if
 end function
 --------------------------------------------------------------------------------
@@ -179,17 +177,17 @@ global function create_directory(string name, integer mode, boolean mkparent)	--
 	name = name[1..$-1]
     end if
     if mkparent != 0 then
-	pos = search:rfind(SLASH, name, 0)
-	if pos != 0 then
-	    ret = create_directory(name[1.. pos-1], mode, mkparent)
-	end if
+		pos = search:rfind(SLASH, name, 0)
+		if pos != 0 then
+			ret = create_directory(name[1.. pos-1], mode, mkparent)
+		end if
     end if
     pname = machine:allocate_string(name)
     if platform() = LINUX then
-	ret = not c_func(xCreateDirectory, {pname, mode})
+		ret = not c_func(xCreateDirectory, {pname, mode})
     elsif platform() = WINDOWS then
-	ret = c_func(xCreateDirectory, {pname, 0})
-	mode = mode -- get rid of not used warning
+		ret = c_func(xCreateDirectory, {pname, 0})
+		mode = mode -- get rid of not used warning
     end if
     return ret
 end function
@@ -210,6 +208,30 @@ end function
 -- ##mode## is ignored on //Windows// platforms.
 --*/
 --------------------------------------------------------------------------------
+global function create_file(sequence name) --> [boolean] SUCCESS|FAILURE
+	integer fh
+	integer ret
+	fh = open(name, "wb") -- fh = -1 if doesn't already exist
+	ret = (fh != -1)
+	if ret then close(fh) end if
+	return ret
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameter:
+--# //name//: the name of the new file to create
+--
+-- Returns:
+--
+-- a **boolean**, success [TRUE] or failure [FALSE].
+--
+-- Notes:
+--
+--* The created file will be empty, that is it has a length of zero.
+--* The created file will not be open when this returns.
+--
+--*/
+--------------------------------------------------------------------------------
 global function current_dir()	-- returns name of the current working directory
     return machine_func(M_CURRENT_DIR, 0)
 end function
@@ -223,6 +245,25 @@ end function
 --
 -- There will be no slash or backslash on the end of the current directory, except under
 -- //Windows//, at the top-level of a drive (such as ##C:\##).
+--*/
+--------------------------------------------------------------------------------
+global function delete_file(sequence name) --> [boolean] SUCCESS|FAILURE
+	atom pfilename
+	integer success
+	success = c_func(xDeleteFile, {pfilename})
+	pfilename = machine:allocate_string(name)
+	if platform() > 2 then success = not success end if
+	machine:free(pfilename)
+	return success
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameter:
+--# //name//: the name of the file to delete
+--
+-- Returns:
+--
+-- a **boolean**, success [TRUE] or failure [FALSE].
 --*/
 --------------------------------------------------------------------------------
 global function dir(sequence name)	-- returns directory information, given the name of a file or directory.
@@ -240,7 +281,7 @@ dir_id = routine_id("dir")
 --
 -- Errors:
 --
--- The length of ##name## should not exceed 1_024 characters.
+-- The length of //name// should not exceed 1_024 characters.
 --
 -- Notes:
 --
@@ -407,6 +448,69 @@ end function
 --
 --*/
 --------------------------------------------------------------------------------
+global function dirname(sequence path, integer pcd) --> [sequence] the directory name of a fully qualified filename
+	sequence data
+	data = pathinfo(path, 0)
+	if pcd then
+		if length(data[1]) = 0 then
+			return "."
+		end if
+	end if
+	return data[1]
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# //path//: the path from which to extract information
+--# //pcd//: if not zero and there is no directory name in //path//
+--                 then "." is returned. The value //0// will just return
+--                 any directory name in //path//.
+--
+-- Returns:
+--
+-- a **sequence**: the full file name part of //path//.
+--
+-- Notes:
+--
+-- The host operating system path separator is used.
+--*/
+--------------------------------------------------------------------------------
+global function filename(sequence path) --> [sequence] the file name portion of a fully qualified filename
+	sequence data
+	data = pathinfo(path, 0)
+	return data[2]
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# //path//: the path from which to extract information
+--
+-- Returns:
+--
+-- a **sequence**: the file name part of //path//.
+--
+-- Notes:
+--
+-- The host operating system path separator is used.
+--*/
+--------------------------------------------------------------------------------
+global function fileext(sequence path) --> [sequence] the file extension of a fully qualified filename
+	sequence data
+	data = pathinfo(path, 0)
+	return data[4]
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# //path//: the path from which to extract information
+--
+-- Returns:
+-- a **sequence**: the file extension part of //path//.
+--
+-- Comments:
+-- The host operating system path separator is used.
+--*/
+--------------------------------------------------------------------------------
 global function walk_dir(sequence path_name, integer your_function, integer scan_subdirs, object dir_source)   -- Generalized Directory Walker
     object abort_now
     object d    
@@ -522,6 +626,25 @@ end function
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.6
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2021.01.19
+--Status: operational; incomplete
+--Changes:]]]
+--* utilised local function IfWin
+--* ##create_file## defined
+--* ##delete_file## defined
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.5
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2020.12.04
+--Status: operational; incomplete
+--Changes:]]]
+--* defined ##pathinfo##
+--* defined //SLASHES//
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.4
 --Euphoria Versions: 3.1.1 upwards

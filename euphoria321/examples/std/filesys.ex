@@ -9,13 +9,16 @@
 --= Program: (test)filesys.ex
 -- Description: test application for the standard library ##filesys.e##
 ------
---[[[Version: 3.2.1.7
+--[[[Version: 3.2.1.9
 --Euphoria Versions: 3.1.1 and later
 --Author: C A Newbould
---Date: 2019.03.26
+--Date: 2021.01.22
 --Status: operational
 --Changes:]]]
---* modified to use //math.ex// as target file
+--* added test for ##pathinfo##
+--* added test for ##dirname##
+--* added test for ##filename##
+--* added test for ##fileext##
 --
 --==<detailed description>
 --
@@ -33,6 +36,7 @@
 include std/filesys.e
 include std/io.e
 include include/utils.e -- for heading, section, closing & EOL
+include std/types.e -- for string
 --------------------------------------------------------------------------------
 --
 --=== Constants
@@ -87,10 +91,10 @@ end function
 --*/
 --------------------------------------------------------------------------------
 heading(LIB)
-section("testing current_dir")
+section(EOL & "testing current_dir")
 string curr_dir curr_dir = current_dir()
 printf(SCREEN, "The current directory is '%s'" & EOL, {curr_dir})
-string os os = curr_dir & "\\math.ex"
+string os os = curr_dir & SLASH & "math.ex"
 puts(SCREEN, "Testing using 'math.ex'" & EOL)
 section("testing dir")
 constant S_C = "; "
@@ -108,23 +112,39 @@ if walk_dir(curr_dir, routine_id("look_at"), 1, -99999) then end if
 section("testing pathname")
 --printf(SCREEN, "The pathname is '%s'" & EOL, {pathname(os)})
 section("testing pathinfo")
---sequence info info = pathinfo(os)
---printf(SCREEN, "Path info = %s" & EOL, {info[1]})
---printf(SCREEN, "File info = %s" & EOL, {info[2]})
---printf(SCREEN, "Name = %s" & EOL, {info[3]})
---printf(SCREEN, "Extension = %s" & EOL, {info[4]})
---printf(SCREEN, "Drive = %s" & EOL, {info[5]})
---section("testing dirname")
---printf(SCREEN, "The dirname is '%s'" & EOL, {dirname(os)})
---section("testing filename")
---printf(SCREEN, "The filename is '%s'" & EOL, {filename(os)})
---section("testing very simple filename")
---printf(SCREEN, "The filename is '%s'" & EOL, {filename("g:fred")})
---section("testing fileext")
---printf(SCREEN, "The file's extension is '%s'" & EOL, {fileext(os)})
+sequence info info = pathinfo(os)
+printf(SCREEN, "Path info = %s" & EOL, {info[1]})
+printf(SCREEN, "File info = %s" & EOL, {info[2]})
+printf(SCREEN, "Name = %s" & EOL, {info[3]})
+printf(SCREEN, "Extension = %s" & EOL, {info[4]})
+printf(SCREEN, "Drive = %s" & EOL, {info[5]})
+section("testing dirname")
+printf(SCREEN, "The dirname is '%s'" & EOL, {dirname(os)})
+section("testing filename")
+printf(SCREEN, "The filename is '%s'" & EOL, {filename(os)})
+section("testing very simple filename")
+printf(SCREEN, "The filename is '%s'" & EOL, {filename("fred")})
+section("testing fileext")
+printf(SCREEN, "The file's extension is '%s'" & EOL, {fileext(os)})
 closing(DEFAULT_MESSAGE)
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.8
+--Euphoria Versions: 3.1.1 and later
+--Author: C A Newbould
+--Date: 2020.12.18
+--Status: operational
+--Changes:]]]
+--* added call to types.e
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.7
+--Euphoria Versions: 3.1.1 and later
+--Author: C A Newbould
+--Date: 2019.03.26
+--Status: operational
+--Changes:]]]
+--* modified to use //math.ex// as target file
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.0.5
 --Euphoria Versions: 3.1.1 and later

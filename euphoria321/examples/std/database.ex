@@ -9,13 +9,13 @@
 --= Program: (euphoria)(demos)(std)database.ex
 -- Description: test program for the standard library eds.e
 ------
---[[[Version: 3.1.1.0
+--[[[Version: 3.1.1.1
 --Euphoria Versions: 3.1.1 upwards 
 --Author: C A Newbould
---Date: 2019.02.21
+--Date: 2021.01.25
 --Status: incomplete
 --Changes:]]]
---* created with EDB creation
+--* corrected runtime error
 --
 --==Test bed for the Standard EDS library
 --
@@ -41,6 +41,7 @@ include include/utils.e -- for heading, section, closing & EOL
 --------------------------------------------------------------------------------
 constant dbFileName = "fred"
 constant LIB = "(include)(std)eds.e"
+constant SCREEN = 1
 --------------------------------------------------------------------------------
 --	Shared with other modules
 --------------------------------------------------------------------------------
@@ -113,4 +114,11 @@ closing(DEFAULT_MESSAGE)
 --------------------------------------------------------------------------------
 -- Previous versions
 --------------------------------------------------------------------------------
+--[[[Version: 3.1.1.0
+--Euphoria Versions: 3.1.1 upwards 
+--Author: C A Newbould
+--Date: 2019.02.21
+--Status: incomplete
+--Changes:]]]
+--* created with EDB creation
 --------------------------------------------------------------------------------

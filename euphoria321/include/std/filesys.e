@@ -10,28 +10,33 @@
 -- Description: Re-writing (where necessary) of existing OE4 standard libraries
 -- for use with Eu3
 ------
---[[[Version: 3.2.1.7
+--[[[Version: 3.2.1.9
 --Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
---Date: 2021.01.22
+--Date: 2021.02.08
 --Status: operational; incomplete
 --Changes:]]]
---* ##dirname## defined
---* ##filename## defined
+--* ##join_path## defined
+--* corrected error in //driveid//
 --
 ------
 --==Euphoria Standard library: filesys
 --===Routines
 -- The following routines are part of the Open Euphoria's standard
 -- library and have been tested/amended to function with Eu3.2.1.
+--* ##absolute_path##
 --* ##chdir##
 --* ##create_directory##
 --* ##create_file##
 --* ##current_dir##
+--* ##defaultext##
 --* ##delete_file##
 --* ##dir##
 --* ##dirname##
+--* ##driveid##
+--* ##fileext##
 --* ##filename##
+--* ##join_path##
 --* ##pathinfo##
 --* ##walk_dir##
 --
@@ -62,11 +67,13 @@ include os.e    -- for LINUX
 --	Local
 --------------------------------------------------------------------------------
 constant DEFAULT_DIR_SOURCE = -2    --override the dir sorting function with your own routine id
+constant FALSE = 0
 constant FAIL = FALSE
 constant M_CHDIR = 63
 constant M_CURRENT_DIR = 23
 constant M_DIR = 22
 constant NO_ROUTINE_ID = -99999
+constant TRUE = not FALSE
 --------------------------------------------------------------------------------
 --	Shared with other modules
 --------------------------------------------------------------------------------
@@ -95,6 +102,9 @@ global constant W_BAD_PATH = -1 -- error code
 --------------------------------------------------------------------------------
 --	Local
 --------------------------------------------------------------------------------
+type boolean(integer this)
+	return TRUE
+end type
 --------------------------------------------------------------------------------
 --	Shared with other modules
 --------------------------------------------------------------------------------
@@ -136,6 +146,45 @@ function default_dir(sequence path)
 end function
 --------------------------------------------------------------------------------
 --	Shared with other modules
+--------------------------------------------------------------------------------
+global function absolute_path(sequence filename) --> [boolean] absolute or relative path
+	if length(filename) = 0 then
+		return FALSE
+	end if
+	if find(filename[1], SLASHES, 1) then
+		return TRUE
+	end if
+	if platform() = WINDOWS then
+		if length(filename) = 1 then
+			return FALSE
+		end if
+		if filename[2] != ':' then
+			return FALSE
+		end if
+		if length(filename) < 3 then
+			return FALSE
+		end if
+		if find(filename[3], SLASHES, 1) then
+			return TRUE
+		end if
+	end if
+	return FALSE
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# //filename: the name of the file path
+--
+-- Returns:
+--
+-- an **integer**: //FALSE// if //filename// is a relative path; TRUE otherwise.
+--
+-- Notes:
+--
+-- A //relative// path is one which is relative to the current directory and
+-- an //absolute// path is one that doesn't need to know the current directory
+-- to find the file.
+--*/
 --------------------------------------------------------------------------------
 global function chdir(sequence newdir)	-- sets a new value for the current directory
     return machine_func(M_CHDIR, newdir)
@@ -247,6 +296,40 @@ end function
 -- //Windows//, at the top-level of a drive (such as ##C:\##).
 --*/
 --------------------------------------------------------------------------------
+global function defaultext( sequence path, sequence defext) --> [sequence] the supplied filepath with the supplied extension
+	if length(defext) = 0 then
+		return path
+	end if
+	for i = length(path) to 1 by -1 do
+		if path[i] = '.' then
+			-- There is a dot in the file name part
+			return path
+		end if
+		if find(path[i], SLASHES) then
+			if i = length(path) then
+				-- No file name in supplied path
+				return path
+			else
+				-- No dot in file name part.
+				exit
+			end if
+		end if
+	end for
+	if defext[1] != '.' then
+		path &= '.'
+	end if
+	return path & defext
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# //path//: the path to check for an extension
+--# //defext//: the extension to add if //path// does not have one
+--
+-- Returns:
+-- a **sequence**: the path with an extension.
+--*/
+--------------------------------------------------------------------------------
 global function delete_file(sequence name) --> [boolean] SUCCESS|FAILURE
 	atom pfilename
 	integer success
@@ -349,6 +432,37 @@ dir_id = routine_id("dir")
 -- 
 -- //Windows//: The file name returned in ##[D_NAME]## will be a long file name. If ##[D_ALTNAME]##
 -- is not zero, it contains the 'short' name of the file.
+--*/
+--------------------------------------------------------------------------------
+global function join_path(sequence path_elements) --> [string] joins multiple path segments into a single path/filename
+	sequence elem, fname
+	fname = ""
+	for i = 1 to length(path_elements) do
+		elem = path_elements[i]
+		if elem[$] = SLASH then
+			elem = elem[1..$ - 1]
+		end if
+		if length(elem) and elem[1] != SLASH then
+			if platform() = WINDOWS then
+				if elem[$] != ':' then
+					elem = SLASH & elem
+				end if
+			else
+				elem = SLASH & elem
+			end if
+		end if
+		fname &= elem
+	end for
+	return fname
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameter:
+--* //path_elements//: separated path elements
+--
+-- Returns:
+--
+-- a **string** representing the path elements on the given platform
 --*/
 --------------------------------------------------------------------------------
 global function pathinfo(sequence path, integer std_slash) -- parses a fully qualified pathname
@@ -473,6 +587,20 @@ end function
 -- Notes:
 --
 -- The host operating system path separator is used.
+--*/
+--------------------------------------------------------------------------------
+global function driveid(sequence path) --> [sequence] the drive part of a path
+	sequence data
+	data = pathinfo(path, 0)
+	return data[5]
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+-- # //path//: the path from which to extract information
+--
+-- Returns:
+-- a **sequence**: the drive letter (MS Windows)
 --*/
 --------------------------------------------------------------------------------
 global function filename(sequence path) --> [sequence] the file name portion of a fully qualified filename
@@ -626,6 +754,26 @@ end function
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.8
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2021.01.26
+--Status: operational; incomplete
+--Changes:]]]
+--* ##fileext## added to documentation
+--* ##driveid## defined
+--* ##defaultext## defined
+--* ##absolute_path## defined
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.7
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2021.01.22
+--Status: operational; incomplete
+--Changes:]]]
+--* ##dirname## defined
+--* ##filename## defined
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.6
 --Euphoria Versions: 3.1.1 upwards

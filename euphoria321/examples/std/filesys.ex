@@ -9,16 +9,13 @@
 --= Program: (test)filesys.ex
 -- Description: test application for the standard library ##filesys.e##
 ------
---[[[Version: 3.2.1.9
+--[[[Version: 3.2.1.10
 --Euphoria Versions: 3.1.1 and later
 --Author: C A Newbould
---Date: 2021.01.22
+--Date: 2021.02.08
 --Status: operational
 --Changes:]]]
---* added test for ##pathinfo##
---* added test for ##dirname##
---* added test for ##filename##
---* added test for ##fileext##
+--* added test for ##join_path##
 --
 --==<detailed description>
 --
@@ -126,9 +123,23 @@ section("testing very simple filename")
 printf(SCREEN, "The filename is '%s'" & EOL, {filename("fred")})
 section("testing fileext")
 printf(SCREEN, "The file's extension is '%s'" & EOL, {fileext(os)})
+section("testing join_path")
+printf(SCREEN, "join_path({\"usr\", \"home\", \"john\", \"hello.txt\"}) -> %s" & EOL,
+{join_path({"usr", "home", "john", "hello.txt"})})
 closing(DEFAULT_MESSAGE)
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.9
+--Euphoria Versions: 3.1.1 and later
+--Author: C A Newbould
+--Date: 2021.01.22
+--Status: operational
+--Changes:]]]
+--* added test for ##pathinfo##
+--* added test for ##dirname##
+--* added test for ##filename##
+--* added test for ##fileext##
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.8
 --Euphoria Versions: 3.1.1 and later

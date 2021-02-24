@@ -11,13 +11,13 @@
 -- Description: Re-allocation of existing OE4 libraries into standard libraries
 -- for use with Eu3
 ------
---[[[Version: 3.2.1.6
+--[[[Version: 3.2.1.7
 --Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
---Date: 2021.01.19
+--Date: 2021.02.24
 --Status: operational; incomplete
 --Changes:]]]
---* ##peek2u## defined
+--* documentation slightly modified
 --
 ------
 --==Euphoria Standard library: machine
@@ -115,19 +115,21 @@ end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameter:
---   # ##n##: the size of the requested block
+--# //n//: the size of the requested block
 --
 -- Returns:
 --
---*   an **atom**: the address of the allocated memory, or
---* 0 if the memory cannot be allocated.
+-- either:
+--* an **atom**: the address of the allocated memory, or
+--* //0// if the memory cannot be allocated.
+--
 -- You must use either an atom or an object to
 -- receive the returned value as sometimes the returned memory address is
 -- too larger for an **integer** to hold.
 --
 -- Notes:
 --
--- * Since ##allocate## acquires memory from the system, it is the programmer's
+-- Since ##allocate## acquires memory from the system, it is the programmer's
 -- responsiblity to return that memory when the application no longer needs it, by
 -- calling the ##free## function to release the memory back to the system.
 --
@@ -147,13 +149,15 @@ end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameter:
---* ##n##: the size of the requested block. 
+--# //n//: the size of the requested block
 --
 -- Returns:
 --
--- An **atom**, the address of the allocated memory or 0 if the memory can't be
---  allocated.
--- NOTE you must use either an atom or object to receive the returned value as
+-- either:
+--* an **atom**: the address of the allocated memory, or
+--* //0// if the memory can't be allocated.
+--
+-- You must use either an atom or object to receive the returned value as
 -- sometimes the returned memory address is too larger for an integer to hold.
 --
 -- Notes:
@@ -187,7 +191,11 @@ end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameter:
---* ##pointers##: a sequence of pointers to add to the pointer array. 
+--# //pointers: a sequence of pointers to be stored
+--
+-- Returns:
+--
+-- an **atom**: the pointer to the start of the stored array
 --
 -- Notes:
 --
@@ -206,16 +214,18 @@ end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameter:
---              # ##s##: the string to store in RAM.
+--# //s//: the string to store in RAM.
 --
 -- Returns:
 --
---  an **atom**, the address of the memory block where the string is
--- stored, or 0 on failure.
+-- either:
+--*  an **atom**, the address of the memory block where the string is
+-- stored, or
+--* //0// on failure.
 --
 -- Notes:
 --
--- Only the 8 lowest bits of each atom in ##s## is stored. Use
+-- Only the 8 lowest bits of each atom in //s// are stored. Use
 -- ##allocate_wstring##  for storing double byte encoded strings.
 --
 -- There is no allocate_string_low function. However, you could easily
@@ -230,8 +240,8 @@ global procedure free(object addr)	-- frees the memory at a given address
 end procedure
 --------------------------------------------------------------------------------
 --/*
--- Parameters:
---# ##addr##: either a single atom or a sequence of atoms;
+-- Parameter:
+--# //addr//: either a single atom or a sequence of atoms;
 -- these are addresses of a blocks to free. 
 -- 
 -- Notes:
@@ -241,11 +251,11 @@ end procedure
 --* Do not reference a block of memory that has been freed. 
 --* When your program terminates, all allocated memory will be returned
 -- to the system. 
---* ##addr## must have been allocated previously using ##allocate##.
+--* //addr// must have been allocated previously using ##allocate##.
 -- You cannot use it to relinquish part of a block.
 -- Instead, you have to allocate a block of the new size, copy useful contents
 -- from old block there and then use ##free## on the old block. 
---* An ##addr## of zero is simply ignored. 
+--* An //addr// of zero is simply ignored. 
 --
 --*/
 --------------------------------------------------------------------------------
@@ -265,7 +275,7 @@ end procedure
 --------------------------------------------------------------------------------
 --/*
 -- Parameter:
---# //pointers_array//: memory address of where the NULL terminated array exists at.
+--# //pointers_array//: memory address where the NULL terminated array starts
 --
 -- Notes:
 --
@@ -288,21 +298,22 @@ end function
 --------------------------------------------------------------------------------
 --/*
 --Parameter:
---* ##addr##: #the address at which to start reading 
+--# //addr//: the address at which to start reading 
 --
 -- Returns:
 --
--- A **sequence** of bytes, the string that could be read.
+-- a **sequence** of bytes: the NULL-terminated string
 --
 -- Errors:
 --
--- Further, peek() memory that doesn't belong to your process is something
+-- Further, ##peek## memory that doesn't belong to your process is something
 -- the operating system could prevent, and you'd crash with a machine level
 -- exception.
+--
 -- Notes:
 --
 -- An ASCII string is any sequence of bytes and ends with a 0 byte.
--- If you peek_string() at some place where there is no string, you will get
+-- If you use ##peek_string## at some place where there is no string, you will get
 -- a sequence of garbage.
 --*/
 --------------------------------------------------------------------------------
@@ -330,13 +341,13 @@ end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameters:
---# //addr_n_length: either
---## an **atom**: to fetch one double word at the statede address, or
---## a **sequence** pair {addr,len}: to fetch len double words starting at addr
+--# //addr_n_length//: either
+--## an **atom**: to fetch one double word at the stated address, or
+--## a **sequence** pair {addr,len}: to fetch len double words starting at //addr//
 --
 -- Returns:
 --
--- an **object**: either
+-- either
 --* an **integer** if the input was a single address, or
 --* a **sequence** of integers if a sequence was passed.
 --
@@ -344,7 +355,7 @@ end function
 --
 -- Errors:
 --
--- Peek() in memory you don't own may be blocked by the OS, and cause a machine exception.
+-- Using ##peek## in memory you don't own may be blocked by the OS, and cause a machine exception.
 -- If you use the define safe these routines will catch these problems with a EUPHORIA error.
 --
 -- When supplying a {address, count} sequence, the count must not be negative.
@@ -380,6 +391,14 @@ end procedure
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.6
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2021.01.19
+--Status: operational; incomplete
+--Changes:]]]
+--* ##peek2u## defined
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.5
 --Euphoria Versions: 3.1.1 upwards

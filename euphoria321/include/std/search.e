@@ -10,13 +10,14 @@
 -- Description: Re-writing (where necessary) of existing OE4 standard libraries
 -- for use with Eu3
 ------
---[[[Version:3.2.1.4
+--[[[Version:3.2.1.5
 --Euphoria Versions: 3.1.1 and later
 --Author: C A Newbould
---Date: 2020.12.18
+--Date: 2021.02.24
 --Status: operational; incomplete
 --Changes:]]]
---* ##begins## defined
+--* ##ends## defined
+--* documentation checked
 --
 ------
 --==Euphoria Standard library: search
@@ -26,6 +27,7 @@
 -- The following routines are part of the Open Euphoria's standard
 -- library and have been tested/amended to function with Eu3.1.1.
 --* ##begins##
+--* ##ends##
 --* ##find_any##
 --* ##match_replace##
 --* ##rfind##
@@ -138,6 +140,46 @@ end function
 -- ##ends##, ##head##
 --*/
 --------------------------------------------------------------------------------
+global function ends(object sub_text, sequence full_text) --> [boolean] TRUE if 'full_text' ends with 'sub_text'
+	if length(full_text) = 0 then return FALSE end if
+	if atom(sub_text) then
+		if equal(sub_text, full_text[$]) then return TRUE
+		else return FALSE
+		end if
+	end if
+	if length(sub_text) > length(full_text) then return FALSE end if
+	if equal(sub_text, full_text[$ - length(sub_text) + 1 .. $]) then return TRUE
+	else return FALSE
+	end if
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# //sub_text//: the possible ending
+--# //full_text//: the source
+--
+-- Returns:
+--
+-- a **boolean**: //TRUE// only if //sub_text// ends //full_text//.
+--
+--- Notes:
+--
+--  If //sub_text is an empty sequence, ##ends## returns //TRUE// unless
+--  //full_text is also an empty sequence.
+--
+--  When they are both empty sequences ##ends## returns //FALSE//.
+--
+-- Example:
+-- <eucode>s = ends("def", "abcdef")
+-- -- s is TRUE
+-- s = begins("bcd", "abcdef")
+-- -- s is FALSE</eucode>
+--
+-- See Also:
+--
+-- ##begins##, ##tail##
+--*/
+--------------------------------------------------------------------------------
 global function find_any(object needles, sequence haystack, integer start)	-- finds, inside a sequence, any element from a list
 	if start <= 0 or start > length(haystack) then start = 1 end if
 	if atom(needles) then
@@ -153,14 +195,14 @@ end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameters:
---# ##needles##: the list of items to look for
---# ##haystack##: the sequence to search in
---# ##start##: the starting point of the search
+--# //needles//: the list of items to look for
+--# //haystack//: the sequence to search in
+--# ##//start//: the starting point of the search
 --
 -- Returns:
 --
--- an **integer**: the smallest index in ##haystack## where any element of 
---##needles## is found, or 0 if no needle is found.
+-- an **integer**: the smallest index in //haystack// where any element of 
+-- //needles// is found, or //0// if no needle is found.
 --
 -- Notes:
 --
@@ -206,25 +248,29 @@ end function
 --/*
 -- Parameters:
 --
---		# ##needle##: an non-empty sequence or atom to search and perhaps replace
---		# ##haystack##: a sequence to be inspected
---		# ##replacement##: an object to substitute for any (first) instance of ##needle##
---		# ##max##: an integer, 0 to replace all occurrences
+--# //needle//: an non-empty sequence or atom to search and perhaps replace
+--# //haystack//: a sequence to be inspected
+--# //replacement//: an object to substitute for any (first) instance of ##needle##
+--# //max//: an integer, 0 to replace all occurrences
 --
 -- Returns:
 --
---		A **sequence**: the modified ##haystack##.
+-- a **sequence**: the modified //haystack//.
 --
 -- Notes:
 --
--- Replacements will not be made recursively on the part of ##haystack## that was already changed.
+-- Replacements will not be made recursively on the part of //haystack// that
+-- was already changed.
 --
--- If ##max## is 0 or less, any occurrence of ##needle## in ##haystack## will be replaced by ##replacement##. Otherwise, only the first ##max## occurrences are.
+-- If //max// is //0// or less, any occurrence of //needle// in //haystack//
+-- will be replaced by //replacement//.
+-- Otherwise, only the first//#max// occurrences are.
 --
--- If either ##needle## or ##replacement## are atoms they will be treated as if you had passed in a 
--- length-1 sequence containing the said atom. 
+-- If either //needle// or //replacement// are atoms they will be treated as if
+-- you had passed in a length-1 sequence containing the said atom. 
 --
--- If ##needle## is an empty sequence, an error will be raised and your program will exit. 
+-- If //needle// is an empty sequence, an error will be raised and the calling
+-- program will exit. 
 --*/
 --------------------------------------------------------------------------------
 global function rfind(object needle, sequence haystack, integer start)	-- finds a needle in a haystack in reverse order
@@ -247,21 +293,22 @@ end function
 --------------------------------------------------------------------------------
 --/*
 -- Parameters:
---   # ##needle##: the object to search for
---   # ##haystack##: the sequence to search in
---   # ##start##: the starting index position (default [0] -> length(##haystack##))
+--# //needle//: the object to search for
+--# //haystack//: the sequence to search in
+--# //start//: the starting index position (default [0] -> ##length##(//haystack//))
 --     
 -- Returns:
 --
---   an **integer**: 0 if no instance of ##needle## can be found in ##haystack## before
---   ##start##; otherwise the highest such index.
+-- an **integer**: //0// if no instance of //needle// can be found in
+-- //haystack// before //start//; otherwise the highest such index.
 --
 -- Notes: 
 --
---   If ##start## is less than 1, it will be added once to length(##haystack##)
---   to designate a position counted backwards. Thus, if ##start## is -1, the
---   first element to be queried in ##haystack## will be ##haystack[$-1]##,
---   then ##haystack[$-2]## and so on.
+-- If //start// is less than 1, it will be added once to
+-- ##length##(//haystack//) to designate a position counted backwards.
+-- Thus, if //start// is -1, the first element to be queried in
+-- //haystack// will be //haystack[$-1]//, then //haystack[$-2]//
+-- and so on.
 --*/
 --------------------------------------------------------------------------------
 --
@@ -270,6 +317,14 @@ end function
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version:3.2.1.4
+--Euphoria Versions: 3.1.1 and later
+--Author: C A Newbould
+--Date: 2020.12.18
+--Status: operational; incomplete
+--Changes:]]]
+--* ##begins## defined
 --------------------------------------------------------------------------------
 --[[[Version:3.2.1.3
 --Euphoria Versions: 3.1.1 and later
@@ -303,4 +358,3 @@ end function
 --Changes:]]]
 --* defined ##match_replace##
 --------------------------------------------------------------------------------
-�45.12

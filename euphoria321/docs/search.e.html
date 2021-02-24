@@ -1,0 +1,164 @@
+<!DOCTYPE html 
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+ <title></title>
+ <link rel="stylesheet" media="screen, projection, print" type="text/css" href="style.css"/>
+<!-- source="/media/charles/EUPHORIA/GitHub/Euphoria3-standard-libraries/euphoria321/include/std/search.e.cr" -->
+</head>
+<body>
+
+<a name="_0_libraryeu321includestdsearche"></a><a name="libraryeu321includestdsearche"></a><h1>Library: (eu3.2.1)(include)(std)search.e</h1>
+<p>  Description: Re-writing (where necessary) of existing OE4 standard libraries  for use with Eu3 </p>
+
+<hr />
+
+<p>Version:3.2.1.5<br />
+Euphoria Versions: 3.1.1 and later<br />
+Author: C A Newbould<br />
+Date: 2021.02.24<br />
+Status: operational; incomplete<br />
+Changes:<br /> </p>
+<ul><li><tt>ends</tt> defined
+</li><li>documentation checked
+</li></ul>
+<hr />
+
+<a name="_1_euphoriastandardlibrarysearch"></a><a name="euphoriastandardlibrarysearch"></a><h2>Euphoria Standard library: search</h2>
+<a name="_2_constants"></a><a name="constants"></a><h3>Constants</h3>
+<a name="_3_routines"></a><a name="routines"></a><h3>Routines</h3>
+<p>  The following routines are part of the Open Euphoria's standard  library and have been tested/amended to function with Eu3.1.1. </p>
+<ul><li><tt>begins</tt>
+</li><li><tt>ends</tt>
+</li><li><tt>find_any</tt>
+</li><li><tt>match_replace</tt>
+</li><li><tt>rfind</tt>
+</li></ul>
+<p> Utilise these routines and the associated constants  by adding the following statement to your module: </p>
+
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">std/search.e</font>
+</pre>
+
+<hr />
+
+<a name="_4_interface"></a><a name="interface"></a><h2>Interface</h2>
+<pre class="examplecode"><font color="#0000FF">include </font><font color="#330033">sequence.e	</font><font color="#FF0055">-- for replace</font>
+</pre>
+
+<a name="_5_routines"></a><a name="routines"></a><h3>Routines</h3>
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">begins</font><font color="#880033">(</font><font color="#0000FF">object </font><font color="#330033">sub_text, </font><font color="#0000FF">sequence </font><font color="#330033">full_text</font><font color="#880033">) </font><font color="#FF0055">-- tests whether a sequence is the head of another one</font>
+</pre>
+
+<p>  Parameters: </p>
+<ol><li><em>sub_text</em>: the possible leading sub-sequence
+</li><li><em>full_text</em>: the full sequence to search
+</li></ol>
+<p> Returns:</p>
+
+<p>  a <strong>boolean</strong>: <em>TRUE</em> if <em>sub_text</em> begins <em>full_text</em></p>
+
+<p>  Notes:</p>
+
+<p>   If <em>sub_text</em> is an empty sequence, this returns <em>TRUE</em> unless <em>full_text</em>   is also an empty sequence.  When they are both empty sequences this returns   <em>FALSE</em>.</p>
+
+<p>  Example:  </p>
+
+<pre class="examplecode"><font color="#330033">s = begins</font><font color="#880033">(</font><font color="#330033">"abc"</font><font color="#330033">, </font><font color="#330033">"abcdef"</font><font color="#880033">)</font>
+<font color="#FF0055"> -- s is 1</font>
+<font color="#330033"> s = begins</font><font color="#880033">(</font><font color="#330033">"bcd"</font><font color="#330033">, </font><font color="#330033">"abcdef"</font><font color="#880033">)</font>
+<font color="#FF0055"> -- s is 0</font>
+</pre>
+
+<p>  See Also:</p>
+
+<p>  <tt>ends</tt>, <tt>head</tt> </p>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">ends</font><font color="#880033">(</font><font color="#0000FF">object </font><font color="#330033">sub_text, </font><font color="#0000FF">sequence </font><font color="#330033">full_text</font><font color="#880033">) </font><font color="#FF0055">--&gt; [boolean] TRUE if 'full_text' ends with 'sub_text'</font>
+</pre>
+
+<p>  Parameters: </p>
+<ol><li><em>sub_text</em>: the possible ending
+</li><li><em>full_text</em>: the source
+</li></ol>
+<p> Returns:</p>
+
+<p>  a <strong>boolean</strong>: <em>TRUE</em> only if <em>sub_text</em> ends <em>full_text</em>.</p>
+
+<p> - Notes:</p>
+
+<p>   If <em>sub_text is an empty sequence, <tt>ends</tt> returns </em>TRUE<em> unless</p>
+</em>full_text is also an empty sequence.</p>
+
+<p>   When they are both empty sequences <tt>ends</tt> returns <em>FALSE</em>.</p>
+
+<p>  Example:  </p>
+
+<pre class="examplecode"><font color="#330033">s = ends</font><font color="#880033">(</font><font color="#330033">"def"</font><font color="#330033">, </font><font color="#330033">"abcdef"</font><font color="#880033">)</font>
+<font color="#FF0055"> -- s is TRUE</font>
+<font color="#330033"> s = begins</font><font color="#880033">(</font><font color="#330033">"bcd"</font><font color="#330033">, </font><font color="#330033">"abcdef"</font><font color="#880033">)</font>
+<font color="#FF0055"> -- s is FALSE</font>
+</pre>
+
+<p>  See Also:</p>
+
+<p>  <tt>begins</tt>, <tt>tail</tt> </p>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">find_any</font><font color="#880033">(</font><font color="#0000FF">object </font><font color="#330033">needles, </font><font color="#0000FF">sequence </font><font color="#330033">haystack, </font><font color="#0000FF">integer </font><font color="#330033">start</font><font color="#880033">)	</font><font color="#FF0055">-- finds, inside a sequence, any element from a list</font>
+</pre>
+
+<p>  Parameters: </p>
+<ol><li><em>needles</em>: the list of items to look for
+</li><li><em>haystack</em>: the sequence to search in
+</li><li>##<em>start</em>: the starting point of the search
+</li></ol>
+<p> Returns:</p>
+
+<p>  an <strong>integer</strong>: the smallest index in <em>haystack</em> where any element of  <em>needles</em> is found, or <em>0</em> if no needle is found.</p>
+
+<p>  Notes:</p>
+
+<p>  This function may be applied either to a string sequence or a complex  sequence. </p>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">match_replace</font><font color="#880033">(</font><font color="#0000FF">object </font><font color="#330033">needle, </font><font color="#0000FF">sequence </font><font color="#330033">haystack, </font><font color="#0000FF">object </font><font color="#330033">replacement, </font><font color="#0000FF">integer </font><font color="#330033">max</font><font color="#880033">)    </font><font color="#FF0055">-- finds a "needle" in a "haystack", and replace any, or only the first few, occurrences with a replacement</font>
+</pre>
+
+<p>  Parameters:</p>
+<ol><li><em>needle</em>: an non-empty sequence or atom to search and perhaps replace
+</li><li><em>haystack</em>: a sequence to be inspected
+</li><li><em>replacement</em>: an object to substitute for any (first) instance of <tt>needle</tt>
+</li><li><em>max</em>: an integer, 0 to replace all occurrences
+</li></ol>
+<p> Returns:</p>
+
+<p>  a <strong>sequence</strong>: the modified <em>haystack</em>.</p>
+
+<p>  Notes:</p>
+
+<p>  Replacements will not be made recursively on the part of <em>haystack</em> that  was already changed.</p>
+
+<p>  If <em>max</em> is <em>0</em> or less, any occurrence of <em>needle</em> in <em>haystack</em>  will be replaced by <em>replacement</em>.  Otherwise, only the first<em>#max</em> occurrences are.</p>
+
+<p>  If either <em>needle</em> or <em>replacement</em> are atoms they will be treated as if  you had passed in a length-1 sequence containing the said atom. </p>
+
+<p>  If <em>needle</em> is an empty sequence, an error will be raised and the calling  program will exit. </p>
+
+<pre class="examplecode"><font color="#0000FF">global function </font><font color="#330033">rfind</font><font color="#880033">(</font><font color="#0000FF">object </font><font color="#330033">needle, </font><font color="#0000FF">sequence </font><font color="#330033">haystack, </font><font color="#0000FF">integer </font><font color="#330033">start</font><font color="#880033">)	</font><font color="#FF0055">-- finds a needle in a haystack in reverse order</font>
+</pre>
+
+<p>  Parameters: </p>
+<ol><li><em>needle</em>: the object to search for
+</li><li><em>haystack</em>: the sequence to search in
+</li><li><em>start</em>: the starting index position (default [0] -&gt; <tt>length</tt>(<em>haystack</em>))
+</li></ol>
+<p>     Returns:</p>
+
+<p>  an <strong>integer</strong>: <em>0</em> if no instance of <em>needle</em> can be found in  <em>haystack</em> before <em>start</em>; otherwise the highest such index.</p>
+
+<p>  Notes: </p>
+
+<p>  If <em>start</em> is less than 1, it will be added once to  <tt>length</tt>(<em>haystack</em>) to designate a position counted backwards.  Thus, if <em>start</em> is -1, the first element to be queried in  <em>haystack</em> will be <em>haystack[$-1]</em>, then <em>haystack[$-2]</em>  and so on.</p>
+</body></html>

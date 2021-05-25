@@ -9,44 +9,19 @@
 --= Program: (test)(std)sort.ex
 -- Description: test application for the standard library ##sort.e##
 ------
---[[[Version: 3.2.0.3
+--[[[Version: 3.2.1.4
 --Euphoria Versions: 3.1.1 and later
 --Author: C A Newbould
---Date: 2017.10.20
+--Date: 2021.05.25
 --Status: copy/created
 --Changes:]]]
---* changed back to make ##include## references require eu.cfg or alternative
+--* corrected error in output
+--* corrected version name
 --
 --==Sort Library
 -- Test bed.
 ------
 --*/
---------------------------------------------------------------------------------
--- Previous versions
---------------------------------------------------------------------------------
---[[[Version: 3.2.0.2
---Euphoria Versions: 3.1.1 and later
---Author: C A Newbould
---Date: 2017.10.16
---Status: copy/created
---Changes:]]]
---* modified to make ##include## references relative
---------------------------------------------------------------------------------
---[[[Version: 3.2.0.1
---Euphoria Versions: 3.1.1 and later
---Author: C A Newbould
---Date: 2017.09.09
---Status: copy/created
---Changes:]]]
---* defined tests for ##sort##
---------------------------------------------------------------------------------
---[[[Version: 3.0.0
---Euphoria Versions: 3.1.1 and later
---Author: C A Newbould
---Date: 2017.07.22
---Status: created
---Changes:]]]
---* defined tests for ##sort##
 --------------------------------------------------------------------------------
 --/*
 --==Interface
@@ -110,8 +85,42 @@ constant LIB = "(std)sort.e"
 --*/
 --------------------------------------------------------------------------------
 heading(LIB)
-section("testing insert")
+section("testing sort")
 puts(1, "sort({18, 21, 16, 23, 17, 16, 20, 20, 19}) -> ")
 ?sort({18, 21, 16, 23, 17, 16, 20, 20, 19}, 0)
 closing(DEFAULT_MESSAGE)
+--------------------------------------------------------------------------------
+-- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.0.3
+--Euphoria Versions: 3.1.1 and later
+--Author: C A Newbould
+--Date: 2017.10.20
+--Status: copy/created
+--Changes:]]]
+--* changed back to make ##include## references require eu.cfg or alternative
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.0.2
+--Euphoria Versions: 3.1.1 and later
+--Author: C A Newbould
+--Date: 2017.10.16
+--Status: copy/created
+--Changes:]]]
+--* modified to make ##include## references relative
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.0.1
+--Euphoria Versions: 3.1.1 and later
+--Author: C A Newbould
+--Date: 2017.09.09
+--Status: copy/created
+--Changes:]]]
+--* defined tests for ##sort##
+--------------------------------------------------------------------------------
+--[[[Version: 3.0.0
+--Euphoria Versions: 3.1.1 and later
+--Author: C A Newbould
+--Date: 2017.07.22
+--Status: created
+--Changes:]]]
+--* defined tests for ##sort##
 --------------------------------------------------------------------------------

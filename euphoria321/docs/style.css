@@ -1,0 +1,12 @@
+/* CSS Document for Euphoria Documentation*/
+
+body {
+    font: normal 12px Verdana, Arial, sans-serif;
+}
+
+pre {
+    /* eucode section */
+	font-family :   "Dejavu Sans Mono";
+	font-size: 12pt;
+    
+}

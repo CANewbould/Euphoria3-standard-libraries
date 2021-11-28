@@ -3,22 +3,21 @@
 --------------------------------------------------------------------------------
 -- Notes:
 --
--- 
+-- Need to define to_number
+-- Fn hex_text needs testing once rest will interpret
 --------------------------------------------------------------------------------
 --/*
 --= Library: (eu3.2.1)(include)(std)convert.e
 -- Description: Re-writing (where necessary) of existing OE4 standard libraries
 -- for use with Eu3
 ------
---[[[Version: 3.2.1.6
+--[[[Version: 3.2.1.8
 --Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
---Date: 2018.11.29
+--Date: 2021.01.16
 --Status: operational; incomplete (includes all RDS routines)
 --Changes:]]]
---* corrected error in ##int_to_bytes##
---* defined sequence_4 type
---* defined sequence_8 type
+--* defined ##hex_text##
 --
 ------
 --==Euphoria Standard library: convert
@@ -31,8 +30,12 @@
 --* ##bytes_to_int##
 --* ##float32_to_atom##
 --* ##float64_to_atom##
+--* ##hex_text##
 --* ##int_to_bits##
 --* ##int_to_bytes##
+--* ##set_decimal_mark##
+--* ##to_integer##
+--* ##to_string##
 --
 -- Utilise these routines by adding the following statement to your module:
 --<eucode>include std/convert.e</eucode>
@@ -47,6 +50,9 @@
 --=== Includes
 --
 --------------------------------------------------------------------------------
+include search.e as search
+include text.e as text
+include types.e as types
 --------------------------------------------------------------------------------
 --
 --=== Constants
@@ -86,6 +92,7 @@ end type
 --------------------------------------------------------------------------------
 --	Local
 --------------------------------------------------------------------------------
+integer decimal_mark decimal_mark = '.' -- for use in to_number (changed in set_decimal_mark)
 atom mem  mem = machine_func(M_ALLOC,8)
 --------------------------------------------------------------------------------
 --	Shared with other modules
@@ -100,14 +107,14 @@ atom mem  mem = machine_func(M_ALLOC,8)
 --------------------------------------------------------------------------------
 --	Shared with other modules
 --------------------------------------------------------------------------------
-global function atom_to_float32(atom a) -- converts an atom to a sequence of 4 bytes in IEEE 32-bit format 
+global function atom_to_float32(atom a) -- converts an atom to a sequence of 4 bytes in IEEE 32-bit format
     return machine_func(M_A_TO_F32, a)
 end function
 --------------------------------------------------------------------------------
 --/*
 --Parameter:
 --# a: the atom to convert
--- 
+--
 --Returns:
 --A **sequence**, of 4 bytes, which can be poked in memory to represent a.
 --
@@ -250,6 +257,61 @@ end function
 -- Any 32-bit IEEE floating-point number can be converted to an atom.
 --*/
 --------------------------------------------------------------------------------
+global function hex_text(sequence text) --> [atom] the hexadecimal representation of text
+    integer div
+    atom fp
+    integer n
+    integer pos
+    atom res
+    integer sign
+    res = 0
+	fp = 0
+	div = 0
+	sign = 0
+	n = 0
+    for i = 1 to length(text) do
+        pos = find(text[i], "0123456789abcdefABCDEF")
+        if text[i] = '#' and n != 0 then exit
+        elsif text[i] = '.' and div != 0 then exit
+        elsif text[i] = '.' and div = 0 then div = 1
+        elsif text[i] = '-' and sign = 0 and n = 0 then sign = -1
+        elsif text[i] = '-' and not (sign = 0 and n = 0) then exit
+        elsif pos = 0 then exit
+        elsif pos > 16 then pos -= 6
+        elsif div = 0 then res = res * 16 + pos-1
+        elsif div != 0 then fp = fp * 16 + pos-1 div += 1
+		end if
+        n += 1
+    end for
+    while div > 1 do
+		fp /= 16
+		div -= 1
+	end while
+	res += fp
+	if sign != 0 then
+		res = -res
+	end if
+	return res
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# //text//: the text to convert
+--
+-- Returns:
+--
+--an **atom**: the numeric equivalent of //text//
+--
+-- Notes:
+--
+-- * The text can optionally begin with '#' which is ignored.
+-- * The text can have any number of underscores, all of which are ignored.
+-- * The text can have one leading '-', indicating a negative number.
+-- * The text can have any number of underscores, all of which are ignored.
+-- * Any other characters in the text stops the parsing and returns the value thus far.
+--
+--*/
+--------------------------------------------------------------------------------
 global function int_to_bits(atom x, integer nbits)  -- extracts the lower bits from an integer
     sequence bits
     atom mask
@@ -318,7 +380,7 @@ end function
 --/*
 --Parameter:
 --# a: the atom to convert
--- 
+--
 --Returns:
 --
 -- A **sequence**, of 4 bytes, lowest significant byte first.
@@ -342,12 +404,142 @@ end function
 -- you will have the correct (two's complement) representation for the 386+.
 --*/
 --------------------------------------------------------------------------------
+global function set_decimal_mark(integer new_mark) --> [integer] gets, and possibly sets, the decimal mark that to_number uses
+	integer old_mark
+    old_mark = decimal_mark
+    if match(new_mark, ",.") then decimal_mark = new_mark
+    else -- do nothing.
+	end if
+	return old_mark
+end function--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+-- # //new_mark//: either a comma (,), a full-stop (.) or any other integer.
+--
+-- Returns:
+--
+-- an **integer**: the current value, before //new_mark// changes it.
+--
+-- Notes:
+--
+-- * When //new_mark is a //full-stop// it will cause ##to_number()## to interpret a dot //(.)//
+-- as the decimal point symbol. The pre-changed value is returned.
+-- * When //new_mark is a //comma// it will cause ##to_number()## to interpret a comma //(,)//
+-- as the decimal point symbol. The pre-changed value is returned.
+-- * Any other value does not change the current setting. Instead it just returns the current value.
+-- * The initial value of the decimal marker is a full-stop.
+--*/
+--------------------------------------------------------------------------------
+global function to_integer(object data_in, integer def_value) --> [integer] converts an object into a integer
+    sequence lResult
+    if integer(data_in) then return data_in end if
+	if atom(data_in) then data_in = floor(data_in)
+		if not integer(data_in) then return def_value end if
+		return data_in
+	end if
+	lResult = to_number(data_in, 1)
+	if lResult[2] != 0 then
+		return def_value
+	else
+		return floor(lResult[1])
+	end if
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+-- # //data_in//: any Euphoria object
+-- # //def_value: the value to be returned if ##data_in## cannot be converted
+--                into an integer.
+--
+-- Returns:
+--
+-- an **integer**: either the integer rendition of //data_in// or //def_value// if it has
+-- no integer value.
+--
+-- Notes:
+--
+-- The returned value is guaranteed to be a valid Euphoria integer.
+--*/
+--------------------------------------------------------------------------------
+global function to_string(object data_in, integer string_quote, integer embed_string_quote) --> [string] converts an object into a text string
+	sequence data_out
+	if types:string(data_in) then
+		if string_quote = 0 then return data_in end if
+		data_in = search:match_replace(`\`, data_in, `\\`)
+		data_in = search:match_replace({string_quote}, data_in, `\` & string_quote)
+		return string_quote & data_in & string_quote
+	end if
+	if atom(data_in) then
+		if integer(data_in) then
+			return sprintf("%d", data_in)
+		end if
+		data_in = text:trim_tail(sprintf("%.15f", data_in), '0')
+		if data_in[$] = '.' then
+			data_in = remove(data_in, length(data_in))
+		end if
+		return data_in
+	end if
+	data_out = "{"
+	for i = 1 to length(data_in) do
+		data_out &= to_string(data_in[i], embed_string_quote)
+		if i != length(data_in) then
+			data_out &= ", "
+		end if
+	end for
+	data_out &= '}'
+	return data_out
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+-- # //data_in//: any Euphoria object
+-- # //string_quote//: the value to be used to
+--   enclose //data_in//, if it is already a **string**.
+-- # //embed_string_quote//: the value to be used to
+--   enclose any strings embedded inside //data_in//. The suggested value is '"'
+--
+-- Returns:
+--
+-- a **sequence**: the string repesentation of //data_in//.
+--
+-- Notes:
+--
+-- * The returned value is guaranteed to be a displayable text string.
+-- * //string_quote// is only used if //data_in// is already a string. In this case,
+--   all occurrences of //string_quote// already in //data_in// will be prefixed with
+--   the '\' escape character, as will any pre-existing escape characters. Then
+--   //string_quote// is added to both ends of //data_in//, resulting in a quoted
+--   string.
+-- * //embed_string_quote// is only used if //data_in// is a sequence that contains
+--   strings. In this case, it is used as the enclosing quote for embedded strings.
+--*/
+--------------------------------------------------------------------------------
 --
 --==== Defined instances
 --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.7
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2021.01.13
+--Status: operational; incomplete (includes all RDS routines)
+--Changes:]]]
+--* defined ##set_decimal_mark##
+--* defined ##to_integer##
+--* defined ##to_string##
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.6
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2018.11.29
+--Status: operational; incomplete (includes all RDS routines)
+--Changes:]]]
+--* corrected error in ##int_to_bytes##
+--* defined sequence_4 type
+--* defined sequence_8 type
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.5
 --Euphoria Versions: 3.1.1 upwards

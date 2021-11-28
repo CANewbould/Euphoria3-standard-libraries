@@ -3,21 +3,20 @@
 --------------------------------------------------------------------------------
 -- Notes:
 --
--- 
+--
 --------------------------------------------------------------------------------
 --/*
 --= Library: (eu3.2.1)(include)(std)filesys.e
 -- Description: Re-writing (where necessary) of existing OE4 standard libraries
 -- for use with Eu3
 ------
---[[[Version: 3.2.1.9
+--[[[Version: 3.2.1.13
 --Euphoria Versions: 3.1.1 upwards
 --Author: C A Newbould
---Date: 2021.02.08
+--Date: 2021.04.03
 --Status: operational; incomplete
 --Changes:]]]
---* ##join_path## defined
---* corrected error in //driveid//
+--* defined ##remove_directory##
 --
 ------
 --==Euphoria Standard library: filesys
@@ -28,19 +27,25 @@
 --* ##chdir##
 --* ##create_directory##
 --* ##create_file##
+--* ##curdir##
 --* ##current_dir##
 --* ##defaultext##
 --* ##delete_file##
 --* ##dir##
 --* ##dirname##
 --* ##driveid##
+--* ##filebase##
+--* ##file_exists##
 --* ##fileext##
 --* ##filename##
+--* ##init_curdir##
 --* ##join_path##
 --* ##pathinfo##
+--* ##remove_directory##
+--* ##split_path##
 --* ##walk_dir##
 --
--- Utilise these routines and the associated constants 
+-- Utilise these routines and the associated constants
 -- by adding the following statement to your module:
 --<eucode>include std/filesys.e</eucode>
 --
@@ -57,7 +62,9 @@
 include dll.e	-- for define_c_func, open_dll & C types
 include machine.e as machine	-- for allocate_string, free
 include search.e as search	-- for rfind
+include sequence.e as stdseq -- for split
 include sort.e  -- for sort
+include types.e -- for t_alpha
 include os.e    -- for LINUX
 --------------------------------------------------------------------------------
 --
@@ -124,6 +131,12 @@ xCreateDirectory = IfWin(define_c_func(lib, "CreateDirectoryA", {C_POINTER, C_PO
 atom xDeleteFile
 xDeleteFile = IfWin(define_c_func(lib, "DeleteFileA", {C_POINTER}, C_BOOL),
 					define_c_func(lib, "unlink", {C_POINTER}, C_INT))
+atom xGetFileAttributes
+xGetFileAttributes = IfWin(define_c_func(lib, "GetFileAttributesA", {C_POINTER}, C_INT),
+						   define_c_func(lib, "access", {C_POINTER, C_INT}, C_INT))
+atom xRemoveDirectory
+xRemoveDirectory = IfWin(define_c_func(lib, "RemoveDirectoryA", {C_POINTER}, C_BOOL),
+						define_c_func(lib, "rmdir", {C_POINTER}, C_INT))
 --------------------------------------------------------------------------------
 --	Shared with other modules
 --------------------------------------------------------------------------------
@@ -138,7 +151,7 @@ global integer my_dir my_dir = DEFAULT_DIR_SOURCE  -- it's better not to use rou
 function default_dir(sequence path)
 -- Default directory sorting function for walk_dir().
 -- * sorts by name *
-    object d    
+    object d
     d = call_func(dir_id, {path})
     if atom(d) then return d
     else return sort(d, ASCENDING)
@@ -151,7 +164,7 @@ global function absolute_path(sequence filename) --> [boolean] absolute or relat
 	if length(filename) = 0 then
 		return FALSE
 	end if
-	if find(filename[1], SLASHES, 1) then
+	if find(filename[1], SLASHES) then
 		return TRUE
 	end if
 	if platform() = WINDOWS then
@@ -164,7 +177,7 @@ global function absolute_path(sequence filename) --> [boolean] absolute or relat
 		if length(filename) < 3 then
 			return FALSE
 		end if
-		if find(filename[3], SLASHES, 1) then
+		if find(filename[3], SLASHES) then
 			return TRUE
 		end if
 	end if
@@ -202,9 +215,9 @@ end function
 --
 -- By setting the current directory, you can refer to files in that directory using just
 -- the file name.
--- 
+--
 -- The ##current_dir## function will return the name of the current directory.
--- 
+--
 -- On //Windows// the current directory is a public property shared
 -- by all the processes running under one shell. On //Unix// a subprocess
 -- can change the current directory for itself, but this will not
@@ -244,7 +257,7 @@ end function
 --/*
 -- Parameters:
 --# //name//: the name of the new directory to create
---# //mode//: on //Unix// systems, permissions for the new directory. Default [0] is 
+--# //mode//: on //Unix// systems, permissions for the new directory. Default [0] is
 --	//448// (all rights for owner, none for others).
 --# //mkparent//: if //TRUE//the parent directories are also created if needed.
 --
@@ -294,6 +307,57 @@ end function
 --
 -- There will be no slash or backslash on the end of the current directory, except under
 -- //Windows//, at the top-level of a drive (such as ##C:\##).
+--*/
+--------------------------------------------------------------------------------
+global function curdir(integer drive_id) -- returns the current directory, with a trailing SLASH
+    sequence lCurDir
+	sequence lDrive
+	sequence lOrigDir
+	if platform() != LINUX then
+	    lOrigDir = ""
+	    if t_alpha(drive_id) then
+		    lOrigDir =  current_dir()
+		    lDrive = "  "
+		    lDrive[1] = drive_id
+		    lDrive[2] = ':'
+		    if chdir(lDrive) = 0 then
+		    	lOrigDir = ""
+		    end if
+		end if
+	end if
+    lCurDir = current_dir()
+	if platform() != LINUX then
+		if length(lOrigDir) > 0 then
+	    	if chdir(lOrigDir[1..2]) then end if -- no action required
+	    end if
+	end if
+	-- Ensure that it ends in a path separator.
+	if (lCurDir[$] != SLASH) then
+		lCurDir &= SLASH
+	end if
+	return lCurDir
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# //drive_id// : For non-Unix systems only. This is the Drive letter to
+--  get the current directory of. For the current drive use //0//.
+--
+-- Returns:
+--
+-- a **sequence**: the current directory.
+--
+-- Notes:
+--
+--  Windows maintain a current directory for each disk drive. You
+--  would use this routine if you wanted the current directory for a drive that
+--  may not be the current drive.
+--
+--  For Unix systems, this is simply ignored because there is only one current
+--  directory at any time on Unix.
+--
+-- This routine always ensures that the returned value has a trailing SLASH
+-- character.
 --*/
 --------------------------------------------------------------------------------
 global function defaultext( sequence path, sequence defext) --> [sequence] the supplied filepath with the supplied extension
@@ -372,19 +436,19 @@ dir_id = routine_id("dir")
 --
 -- The returned information is similar to what you would get from the DIR command. A sequence
 -- is returned where each element is a sequence that describes one file or subdirectory.
--- 
--- If //name// refers to a **directory** you may have entries for "." and "..", just as with the 
--- DIR command. If it refers to an existing **file**, and has no wildcards, then the returned 
--- sequence will have just one entry (that is its length will be ##1##). If ##name## contains wildcards 
+--
+-- If //name// refers to a **directory** you may have entries for "." and "..", just as with the
+-- DIR command. If it refers to an existing **file**, and has no wildcards, then the returned
+-- sequence will have just one entry (that is its length will be ##1##). If ##name## contains wildcards
 -- you may have multiple entries.
--- 
+--
 -- Each entry contains the name, attributes and file size as well as
 -- the time of the last modification.
 --
 -- You can refer to the elements of an entry with the following constants~:
---  
+--
 -- <eucode>
--- global constant 
+-- global constant
 --     -- File Attributes
 --     D_NAME       = 1,
 --     D_ATTRIBUTES = 2,
@@ -400,13 +464,13 @@ dir_id = routine_id("dir")
 -- </eucode>
 --
 -- The attributes element is a string sequence containing characters chosen from~:
---  
+--
 -- || Attribute || Description ||
 -- | 'd'         | directory
 -- | 'r'         | read only file
 -- | 'h'         | hidden file
 -- | 's'         | system file
--- | 'v'         | volume-id entry 
+-- | 'v'         | volume-id entry
 -- | 'a'         | archive file
 -- | 'c'         | compressed file
 -- | 'e'         | encrypted file
@@ -421,17 +485,36 @@ dir_id = routine_id("dir")
 -- A normal file without special attributes would just have an empty string, ##""##, in this field.
 --
 -- The top level directory ( therefore c:\ does not have "." or ".." entries).
--- 
+--
 -- This function is often used just to test if a file or directory exists.
--- 
--- Under //Windows//, the argument can have a long file or directory name anywhere in 
+--
+-- Under //Windows//, the argument can have a long file or directory name anywhere in
 -- the path.
--- 
+--
 -- Under //Unix//, the only attribute currently available is ##'d'## and the milliseconds
 -- are always zero.
--- 
+--
 -- //Windows//: The file name returned in ##[D_NAME]## will be a long file name. If ##[D_ALTNAME]##
 -- is not zero, it contains the 'short' name of the file.
+--*/
+--------------------------------------------------------------------------------
+constant InitCurDir = curdir(0) -- Capture the original PWD
+--------------------------------------------------------------------------------
+global function init_curdir() --> [string] the original current directory
+	return InitCurDir
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Returns:
+--
+-- a **sequence**: the current directory at the time the program started running.
+--
+-- Notes:
+--
+-- You would use this if the program might change the current directory during
+-- its processing and you wanted to return to the original directory.
+--
+-- This always ensures that the returned value has a trailing SLASH character.
 --*/
 --------------------------------------------------------------------------------
 global function join_path(sequence path_elements) --> [string] joins multiple path segments into a single path/filename
@@ -463,6 +546,97 @@ end function
 -- Returns:
 --
 -- a **string** representing the path elements on the given platform
+--*/
+--------------------------------------------------------------------------------
+global function remove_directory(sequence dir_name, boolean force) -- [boolean] removes a directory
+	object files
+	atom pname
+	boolean ret
+	-- Remove any trailing slash
+	if length(dir_name) > 0 then
+		if dir_name[$] = SLASH then
+			dir_name = dir_name[1 .. $-1]
+		end if
+	end if
+	if length(dir_name) = 0 then
+		return FALSE	-- nothing specified to delete.
+		            	-- (not allowed to delete root directory btw)
+	end if
+	if platform() = WINDOWS then
+		if length(dir_name) = 2 then
+			if dir_name[2] = ':' then
+				return FALSE -- nothing specified to delete
+			end if
+		end if
+	end if
+	files = dir(dir_name)
+	if atom(files) then
+		return FALSE
+	end if
+	if length(files) < 2 then
+		return FALSE	-- Supplied dir_name was not a directory
+	end if
+	if platform() = WINDOWS then
+		if not equal(files[1][D_NAME], ".") then
+			return FALSE -- Supplied name was not a directory
+		end if
+		if not find('d', files[1][D_ATTRIBUTES]) then
+			return FALSE -- Supplied name was not a directory
+		end if
+		if length(files) > 2 then
+			if not force then
+				return FALSE -- Directory is not already emptied.
+			end if
+		end if
+	end if
+	dir_name &= SLASH
+	if platform() = WINDOWS then
+		for i = 3 to length(files) do
+			if find('d', files[i][D_ATTRIBUTES]) then
+				ret = remove_directory(dir_name & files[i][D_NAME] & SLASH, force)
+			else
+				ret = delete_file(dir_name & files[i][D_NAME])
+			end if
+			if not ret then
+				return FALSE
+			end if
+		end for
+	else
+		for i = 1 to length(files) do
+			if find(files[i][D_NAME], {".",".."}) then
+				--continue
+			elsif find('d', files[i][D_ATTRIBUTES]) then
+				ret = remove_directory(dir_name & files[i][D_NAME] & SLASH, force)
+			else
+				ret = delete_file(dir_name & files[i][D_NAME])
+			end if
+			if not ret then
+				return FALSE
+			end if
+		end for
+	end if
+	pname = allocate_string(dir_name)
+	ret = c_func(xRemoveDirectory, {pname})
+	if platform() != WINDOWS then ret = not ret end if
+	free(pname)
+	return ret
+end function
+--------------------------------------------------------------------------------
+--/*
+--*/
+--------------------------------------------------------------------------------
+global function split_path(sequence fname) -- splits a filename into path segments
+	return stdseq:split(fname, SLASH, 1, 0)
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--
+--# //fname//: filename to split
+--
+-- Returns:
+--
+-- a **sequence** of strings representing each path element found in //fname//.
 --*/
 --------------------------------------------------------------------------------
 global function pathinfo(sequence path, integer std_slash) -- parses a fully qualified pathname
@@ -563,8 +737,7 @@ end function
 --*/
 --------------------------------------------------------------------------------
 global function dirname(sequence path, integer pcd) --> [sequence] the directory name of a fully qualified filename
-	sequence data
-	data = pathinfo(path, 0)
+	sequence data data = pathinfo(path, 0)
 	if pcd then
 		if length(data[1]) = 0 then
 			return "."
@@ -577,8 +750,8 @@ end function
 -- Parameters:
 --# //path//: the path from which to extract information
 --# //pcd//: if not zero and there is no directory name in //path//
---                 then "." is returned. The value //0// will just return
---                 any directory name in //path//.
+--           then "." is returned. The value //0// will just return
+--           any directory name in //path//.
 --
 -- Returns:
 --
@@ -590,8 +763,7 @@ end function
 --*/
 --------------------------------------------------------------------------------
 global function driveid(sequence path) --> [sequence] the drive part of a path
-	sequence data
-	data = pathinfo(path, 0)
+	sequence data data = pathinfo(path, 0)
 	return data[5]
 end function
 --------------------------------------------------------------------------------
@@ -622,9 +794,49 @@ end function
 -- The host operating system path separator is used.
 --*/
 --------------------------------------------------------------------------------
+global function filebase(sequence path) --> [sequence] the base filename of path
+	sequence data data = pathinfo(path, 0)
+	return data[3]
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameter:
+--# //path//: the path from which to extract information
+--
+-- Returns:
+--
+-- a **sequence**: the base file name part of //path//.
+--*/
+--------------------------------------------------------------------------------
+global function file_exists(object name) --> [boolean] TRUE if file can be found
+	atom pName
+	boolean ret
+	if atom(name) then return FALSE
+	else
+		pName = allocate_string(name)
+		if platform() = WINDOWS then
+			ret = (c_func(xGetFileAttributes, {pName}) > 0)
+		elsif platform() = LINUX then
+			ret = (c_func(xGetFileAttributes, {pName, 0}) = 0)
+		else
+			ret = sequence(dir(name))
+		end if
+	end if
+	free(pName)
+	return ret
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameter:
+--# //name//: name of file
+--
+-- Returns:
+--
+-- a **boolean**: //TRUE// for 'yes', //FALSE// for 'no'
+--*/
+--------------------------------------------------------------------------------
 global function fileext(sequence path) --> [sequence] the file extension of a fully qualified filename
-	sequence data
-	data = pathinfo(path, 0)
+	sequence data data = pathinfo(path, 0)
 	return data[4]
 end function
 --------------------------------------------------------------------------------
@@ -641,7 +853,7 @@ end function
 --------------------------------------------------------------------------------
 global function walk_dir(sequence path_name, integer your_function, integer scan_subdirs, object dir_source)   -- Generalized Directory Walker
     object abort_now
-    object d    
+    object d
 	object orig_func
 	object source_orig_func
 	object source_user_data
@@ -663,7 +875,7 @@ global function walk_dir(sequence path_name, integer your_function, integer scan
 			d = call_func(dir_source, {path_name})
 		else
 			d = call_func(dir_source, {path_name, source_user_data})
-		end if		
+		end if
 	elsif my_dir = DEFAULT_DIR_SOURCE then
 		d = default_dir(path_name)
 	else
@@ -678,20 +890,20 @@ global function walk_dir(sequence path_name, integer your_function, integer scan
     		abort_now = call_func(your_function, user_data)
     		if not equal(abort_now, 0) then
     			return abort_now
-    		end if		
+    		end if
     		if find('d', d[i][D_ATTRIBUTES]) then
     			-- a directory
     			if scan_subdirs then
     				abort_now = walk_dir(path_name & SLASH & d[i][D_NAME],
-    									 orig_func, scan_subdirs, source_orig_func)				
-    				if not equal(abort_now, 0) and 
+    									 orig_func, scan_subdirs, source_orig_func)
+    				if not equal(abort_now, 0) and
     				   not equal(abort_now, W_BAD_PATH) then
-    					-- allow BAD PATH, user might delete a file or directory 
+    					-- allow BAD PATH, user might delete a file or directory
     					return abort_now
     				end if
     			end if
     		end if
-		end if		
+		end if
 	end for
 	return 0
 end function
@@ -707,7 +919,7 @@ end function
 --                       can be a 2 element sequence, with the routine_id as the first element and other data
 --                       as the second element.
 --# //scan_subdirs//: //1// to also walk though subfolders, //0// to skip them all.
---# //dir_source//: a routine_id of a user-defined routine that 
+--# //dir_source//: a routine_id of a user-defined routine that
 --                    returns the list of paths to pass to ##your_function##.
 --					  If your routine requires an extra parameter,
 --                    //dir_source// may be a 2 element sequence where the first element is the
@@ -723,24 +935,24 @@ end function
 --
 -- Notes:
 --
--- This routine will "walk" through a directory named //path_name//. For each entry in the 
+-- This routine will "walk" through a directory named //path_name//. For each entry in the
 -- directory, it will call a function, whose routine_id is //your_function//.
 -- If //scan_subdirs// is non-zero (TRUE), then the subdirectories in
 -- //path_name// will be walked through recursively in the very same way.
 --
--- The routine that you supply should accept two sequences, the //path name// and //dir// entry for 
+-- The routine that you supply should accept two sequences, the //path name// and //dir// entry for
 -- each file and subdirectory. It should return ##0## to keep going, ##W_SKIP_DIRECTORY## to avoid
--- scan the contents of the supplied path name (if a directory), or non-zero to stop 
+-- scan the contents of the supplied path name (if a directory), or non-zero to stop
 -- ##walk_dir##. Returning //W_BAD_PATH// is taken as denoting some error.
 --
--- This mechanism allows you to write a simple function that handles one file at a time, 
+-- This mechanism allows you to write a simple function that handles one file at a time,
 -- while ##walk_dir## handles the process of walking through all the files and subdirectories.
 --
--- By default, the files and subdirectories will be visited in alphabetical order. To use 
+-- By default, the files and subdirectories will be visited in alphabetical order. To use
 -- a different order, use the ##dir_source## to pass the routine_id of your own modified
 -- ##dir## function that sorts the directory entries differently.
 --
--- The path that you supply to ##walk_dir## must not contain wildcards (//*// or //?//). Only a 
+-- The path that you supply to ##walk_dir## must not contain wildcards (//*// or //?//). Only a
 -- single directory (and its subdirectories) can be searched at one time.
 --
 -- For //Windows// systems, any //'/'// characters in //path_name// are replaced with //'\'//.
@@ -754,6 +966,43 @@ end function
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.12
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2021.03.28
+--Status: operational; incomplete
+--Changes:]]]
+--* defined ##init_curdir##
+--* defined ##filebase##
+--* defined ##file_exists##
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.11
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2021.02.
+--Status: operational; incomplete
+--Changes:]]]
+--* corrected error in ##absolute_path##
+--* corrected error in ##curdir##
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.10
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2021.02.09
+--Status: operational; incomplete
+--Changes:]]]
+--* ##split_path## defined
+--* ##curdir## defined
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.9
+--Euphoria Versions: 3.1.1 upwards
+--Author: C A Newbould
+--Date: 2021.02.08
+--Status: operational; incomplete
+--Changes:]]]
+--* ##join_path## defined
+--* corrected error in //driveid//
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.8
 --Euphoria Versions: 3.1.1 upwards

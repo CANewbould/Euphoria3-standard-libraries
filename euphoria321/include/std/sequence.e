@@ -3,20 +3,20 @@
 --------------------------------------------------------------------------------
 -- Notes:
 --
--- 
+--
 --------------------------------------------------------------------------------
 --/*
 --= Library: (eu3.2.1)(include)(std)sequence.e
 -- Description: Re-writing (where necessary) of existing OE4 standard libraries
 -- for use with Eu3
 ------
---[[[Version: 3.2.1.7
+--[[[Version: 3.2.1.8
 --Euphoria Versions: 3.1.1 and after
 --Author: C A Newbould
---Date: 2018.03.05
+--Date: 2021.02.25
 --Status: operational; incomplete
 --Changes:]]]
---* defined ##replace##
+--* defined ##split##
 --
 ------
 --==Euphoria Standard library: sequence
@@ -31,6 +31,7 @@
 --* ##reverse##
 --* ##series##
 --* ##splice##
+--* ##split##
 --* ##store##
 --* ##valid_index##
 --
@@ -92,15 +93,15 @@ global function binop_ok(object a, object b)    -- checks whether two objects ca
 	if atom(a) or atom(b) then
 		return TRUE
 	end if
-     -- sequence if reached here	
+     -- sequence if reached here
 	if length(a) != length(b) then
 		return FALSE
-	end if	
+	end if
 	for i = 1 to length(a) do
 		if not binop_ok(a[i], b[i]) then
 			return FALSE
 		end if
-	end for	
+	end for
 	return TRUE    -- fall-through
 end function
 --------------------------------------------------------------------------------
@@ -281,7 +282,7 @@ end function
 --
 -- The ##pTo## parameter can be negative, which indicates an offset from the last element.
 -- Thus a value of -1 refers to the second-last element.
--- 
+--
 -- A value of 0 refers to the last element.
 --*/
 --------------------------------------------------------------------------------
@@ -290,9 +291,9 @@ global function series(object start, object increment, integer count, integer op
     if op = 0 then op = '+' end if  -- default
     -- deal with simple cases
 	if count < 0 then return 0 end if
-	if not binop_ok(start, increment) then return 0 end if	
+	if not binop_ok(start, increment) then return 0 end if
 	if count = 0 then return {} end if
-    -- now it gets serious	
+    -- now it gets serious
 	result = repeat(0, count)
 	result[1] = start
     if op = '+' then
@@ -366,6 +367,92 @@ end function
 --
 -- This function is built into Open Euphoria 4 but is added to the library in
 -- this implementation.
+--*/
+--------------------------------------------------------------------------------
+global function split(sequence st, object delim, integer no_empty, integer limit) --> [sequence] splits a sequence into a number of sub-sequences
+	integer k
+	integer pos
+	sequence ret
+	integer start
+	ret = {}
+	if length(st) = 0 then return ret end if
+	if sequence(delim) then
+		-- Handle the simple case of split("123", ""), opposite is join({"1","2","3"}, "") -- "123"
+		if equal(delim, "") then
+			for i = 1 to length(st) do
+				st[i] = {st[i]}
+				limit -= 1
+				if limit = 0 then
+					st = append(st[1 .. i],st[i+1 .. $])
+					exit
+				end if
+			end for
+			return st
+		end if
+		start = 1
+		while start <= length(st) do
+			pos = match_from(delim, st, start)
+			if pos = 0 then
+				exit
+			end if
+			ret = append(ret, st[start..pos-1])
+			start = pos+length(delim)
+			limit -= 1
+			if limit = 0 then
+				exit
+			end if
+		end while
+	else
+		start = 1
+		while start <= length(st) do
+			pos = find_from(delim, st, start)
+			if pos = 0 then
+				exit
+			end if
+			ret = append(ret, st[start..pos-1])
+			start = pos + 1
+			limit -= 1
+			if limit = 0 then
+				exit
+			end if
+		end while
+	end if
+	ret = append(ret, st[start..$])
+	k = length(ret)
+	if no_empty then
+		k = 0
+		for i = 1 to length(ret) do
+			if length(ret[i]) != 0 then
+				k += 1
+				if k != i then
+					ret[k] = ret[i]
+				end if
+			end if
+		end for
+	end if
+	if k < length(ret) then return ret[1 .. k]
+	else return ret
+	end if
+end function
+--------------------------------------------------------------------------------
+--/*
+-- Parameters:
+--# //source//: the sequence to split
+--# //delim//: the delimiter in //source// to separate
+--# //no_empty//: if not zero then all zero-length sub-sequences
+--                are removed from the returned sequence.
+-- Use this when leading, trailing and duplicated delimiters are not significant.
+--# //limit//: the maximum number of sub-sequences to create.
+-- If zero, there is no limit.
+--
+-- Returns:
+--
+-- a **sequence**: sub-sequences of //source//. Delimiters are removed.
+--
+-- Notes:
+--
+-- This function may be applied to a string sequence or a complex sequence.
+--
 --*/
 --------------------------------------------------------------------------------
 global function store(sequence target, sequence indexes, object x)  -- stores an object at a location nested arbitrarily deep into a sequence
@@ -446,6 +533,14 @@ end function
 --*/
 --------------------------------------------------------------------------------
 -- Previous versions
+--------------------------------------------------------------------------------
+--[[[Version: 3.2.1.7
+--Euphoria Versions: 3.1.1 and after
+--Author: C A Newbould
+--Date: 2018.03.05
+--Status: operational; incomplete
+--Changes:]]]
+--* defined ##replace##
 --------------------------------------------------------------------------------
 --[[[Version: 3.2.1.6
 --Euphoria Versions: 3.1.1 and after
